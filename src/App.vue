@@ -1,26 +1,28 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div id="app">
+    <!-- Layout 里面包括了顶部header,左侧菜单menu,中间的主内容区 -->
+    <Layout></Layout>
+    <!-- 页面底部的条形播放器 -->
+    <MiniPlayer />
+  </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
+import Layout from "@/layout/index"
+import MiniPlayer from "@/components/MiniPlayer"
 export default {
-  name: 'App',
+  name: "App",
   components: {
-    HelloWorld
-  }
+    Layout,
+    MiniPlayer,
+  },
 }
 </script>
 
-<style>
+<style lang="less">
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  height: 100%;
+  background-color: var(--body-bgcolor);
+  font-size: @font-size;
 }
 </style>

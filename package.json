@@ -9,7 +9,14 @@
   },
   "dependencies": {
     "core-js": "^3.6.5",
-    "vue": "^3.0.0"
+    "less": "^4.1.2",
+    "less-loader": "^6.1.0",
+    "postcss-pxtorem": "^4.0.1",
+    "swiper": "^7.2.0",
+    "vue": "^3.0.0",
+    "vue-router": "^4.0.12",
+    "vuex": "^4.0.2",
+    "xgplayer": "^2.1.9"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",
@@ -19,6 +26,17 @@
     "babel-eslint": "^10.1.0",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^7.0.0"
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {},
+      "postcss-pxtorem": {
+        "rootValue": 14,
+        "propList": [
+          "*"
+        ]
+      }
+    }
   },
   "eslintConfig": {
     "root": true,
