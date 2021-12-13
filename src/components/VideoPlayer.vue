@@ -1,3 +1,4 @@
+// 位于MV播放页面中的视频播放器
 <template>
   <div id="video-player"></div>
 </template>

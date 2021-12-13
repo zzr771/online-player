@@ -1,3 +1,4 @@
+// 用户评论的最小单元
 <template>
   <div class="comment-card" :class="{ 'bottom-border': bottomBorder }">
     <img :src="comment.avatar" class="avatar" />

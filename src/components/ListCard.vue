@@ -1,3 +1,4 @@
+// 位于"推荐歌单"页面中的, 方形歌单单元
 <template>
   <div class="list-card">
     <div class="img-part">
@@ -62,6 +63,7 @@ export default {}
       transition: 0.3s;
       opacity: 0;
       i {
+        font-size: @font-size;
         padding-left: 2px;
         vertical-align: middle;
         color: @theme-color;

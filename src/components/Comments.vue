@@ -1,3 +1,4 @@
+// 用户评论区, 包含"精彩评论"和"最新评论"两个分区
 <template>
   <div class="comments">
     <div class="hot-comments" v-if="comments.hotComments">

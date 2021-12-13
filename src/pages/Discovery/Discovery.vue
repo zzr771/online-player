@@ -1,3 +1,4 @@
+// "发现音乐"一级路由页
 <template>
   <div class="discovery">
     <!-- 轮播图 -->

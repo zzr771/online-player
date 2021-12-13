@@ -1,3 +1,4 @@
+// 位于页面顶部header左侧的两个按钮, 控制路由的前进和后退
 <template>
   <div class="route-control">
     <span @click="$router.back()"><i class="iconfont icon-back"></i></span>

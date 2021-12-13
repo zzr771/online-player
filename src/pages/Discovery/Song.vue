@@ -1,3 +1,4 @@
+// "发现音乐"页面中的"最新音乐"组件
 <template>
   <div class="new-songs">
     <TitleH2 title="最新音乐"></TitleH2>
@@ -6,9 +7,7 @@
         <p class="left">{{ index }}</p>
         <div class="middle">
           <img src="./images/songs/1.jpg" alt="" />
-          <div class="play-icon">
-            <i class="iconfont icon-bofang"></i>
-          </div>
+          <PlayIcon :size="24"></PlayIcon>
         </div>
         <div class="right">
           <p class="song-name">At Least I Had You</p>
@@ -21,8 +20,9 @@
 
 <script>
 import TitleH2 from "@/components/TitleH2"
+import PlayIcon from "@/components/PlayIcon"
 export default {
-  components: { TitleH2 },
+  components: { TitleH2, PlayIcon },
 }
 </script>
 
@@ -58,31 +58,9 @@ export default {
       width: 68px;
       height: $width;
       margin-right: 8px;
-      &:hover .play-icon {
-        opacity: 1;
-      }
       img {
         width: 100%;
         height: 100%;
-      }
-      .play-icon {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        width: 24px;
-        height: $width;
-        line-height: $height;
-        text-align: center;
-        border-radius: 50%;
-        background-color: @font-color-transparent;
-        transition: 0.3s;
-        opacity: 0;
-        i {
-          padding-left: 2px;
-          font-size: 12px;
-          color: @theme-color;
-        }
       }
     }
     .right {

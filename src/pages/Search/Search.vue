@@ -1,3 +1,4 @@
+// 搜索页面, 一级路由页. 通过页面右上方的搜索框来触发弹出
 <template>
   <div class="search clearfix">
     <div class="header">
@@ -6,15 +7,9 @@
         <span>找到503个结果</span>
       </div>
       <div class="tabs">
-        <router-link :to="{ path: '/search/songs', query: { keyword: keyword } }"
-          >歌曲</router-link
-        >
-        <router-link :to="{ path: '/search/lists', query: { keyword: keyword } }"
-          >歌单</router-link
-        >
-        <router-link :to="{ path: '/search/mvs', query: { keyword: keyword } }"
-          >MV</router-link
-        >
+        <router-link :to="{ path: '/search/songs', query: { keyword: keyword } }">歌曲</router-link>
+        <router-link :to="{ path: '/search/lists', query: { keyword: keyword } }">歌单</router-link>
+        <router-link :to="{ path: '/search/mvs', query: { keyword: keyword } }">MV</router-link>
       </div>
     </div>
     <div class="router-view-wrapper">
@@ -26,9 +21,6 @@
 <script>
 export default {
   props: { keyword: String },
-  setup(props) {
-    // console.log("search.vue", props.keyword)
-  },
 }
 </script>
 

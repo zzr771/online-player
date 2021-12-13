@@ -1,3 +1,4 @@
+// "发现音乐"页面中的"推荐MV"组件
 <template>
   <div class="recommended-mv">
     <TitleH2 title="推荐MV"></TitleH2>

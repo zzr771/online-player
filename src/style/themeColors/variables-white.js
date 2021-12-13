@@ -38,7 +38,7 @@ export default {
   //search
   ["--search-bgcolor"]: "#fff",
   //progress
-  ["--progress-bgcolor"]: "#ddd",
+  ["--progress-bgcolor"]: "#eee",
 
   //input
   ["--input-color"]: "#4a4a4a",

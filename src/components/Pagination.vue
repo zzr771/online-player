@@ -1,19 +1,12 @@
+// 页码器
 <template>
   <div class="pagination">
     <div class="button left" @click="clickBtn('left')">
       <i class="iconfont icon-back"></i>
     </div>
     <div class="number-wrapper">
-      <span class="number" :class="{ on: currentPage == 1 }" @click="clickNumer(1)"
-        >1</span
-      >
-      <span
-        class="number"
-        @click="clickEllip('left')"
-        v-show="currentPage > 4"
-        id="leftEllip"
-        >...</span
-      >
+      <span class="number" :class="{ on: currentPage == 1 }" @click="clickNumer(1)">1</span>
+      <span class="number" @click="clickEllip('left')" v-show="currentPage > 4" id="leftEllip">...</span>
       <!-- 活动页码部分 -->
       <span
         class="number"
@@ -31,12 +24,9 @@
         id="rightEllip"
         >...</span
       >
-      <span
-        class="number"
-        :class="{ on: currentPage == totalPageNum }"
-        @click="clickNumer(totalPageNum)"
-        >{{ totalPageNum }}</span
-      >
+      <span class="number" :class="{ on: currentPage == totalPageNum }" @click="clickNumer(totalPageNum)">{{
+        totalPageNum
+      }}</span>
     </div>
     <div class="button right" @click="clickBtn('right')">
       <i class="iconfont icon-next"></i>

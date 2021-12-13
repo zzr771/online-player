@@ -1,3 +1,4 @@
+// "发现音乐"页面中的"推荐歌单"组件
 <template>
   <div class="recommended-list">
     <TitleH2 title="推荐歌单"></TitleH2>

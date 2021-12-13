@@ -1,3 +1,4 @@
+// 位于顶部header右侧的搜索栏
 <template>
   <div class="search">
     <div class="search-part" @click="showPanelFn">
@@ -8,7 +9,7 @@
       <div class="hot">
         <h3>热门搜索</h3>
         <div class="tags">
-          <!-- tag的click事件要阻止冒泡, 防止触发到showPanelFn, 触发showPanelFn的话面板就无法关闭 -->
+          <!-- search-tag的click事件要阻止冒泡, 防止触发到showPanelFn, 触发showPanelFn的话面板就无法关闭 -->
           <span class="search-tag" @click.stop="clickTag">adele</span>
         </div>
       </div>
@@ -91,9 +92,9 @@ export default {
   .hot-history-pannel {
     position: fixed;
     z-index: 1000;
-    top: 50px;
+    top: @header-height;
     right: 0;
-    bottom: 60px;
+    bottom: @mini-player-height;
     width: 350px;
     box-shadow: -2px -2px 5px rgba(0, 0, 0, 0.1);
     background-color: var(--search-bgcolor);

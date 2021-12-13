@@ -1,3 +1,4 @@
+// "最新音乐"一级路由页
 <template>
   <div class="new-songs">
     <TabsBasic></TabsBasic>
@@ -12,9 +13,7 @@
         <span class="number" v-else>{{ index + 1 }}</span>
         <div class="img-part">
           <img src="./images/1.jpg" alt="" />
-          <div class="play-icon">
-            <i class="iconfont icon-bofang"></i>
-          </div>
+          <PlayIcon :size="24"></PlayIcon>
         </div>
         <div class="name">
           <span>{{ song.name }}</span>
@@ -30,11 +29,9 @@
 
 <script>
 import TabsBasic from "@/components/TabsBasic"
+import PlayIcon from "@/components/PlayIcon"
 import { reactive, provide } from "vue"
 export default {
-  components: {
-    TabsBasic,
-  },
   setup() {
     const tabs = reactive([
       { name: "全部", on: false },
@@ -85,6 +82,10 @@ export default {
 
     return { songs }
   },
+  components: {
+    TabsBasic,
+    PlayIcon,
+  },
 }
 </script>
 
@@ -116,33 +117,9 @@ export default {
     margin-left: 14px;
     margin-right: 40px;
     cursor: pointer;
-    &:hover {
-      .play-icon {
-        opacity: 1;
-      }
-    }
     img {
       height: 100%;
       border-radius: 5px;
-    }
-    .play-icon {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 24px;
-      height: $width;
-      line-height: $height;
-      border-radius: 50%;
-      text-align: center;
-      background-color: @font-color-transparent;
-      transition: 0.3s;
-      opacity: 0;
-      i {
-        font-size: 12px;
-        margin-left: 2px;
-        color: @theme-color;
-      }
     }
   }
   .name {

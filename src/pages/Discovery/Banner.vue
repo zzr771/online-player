@@ -1,6 +1,8 @@
+// "发现音乐"页面顶部的轮播图组件
 <template>
   <div class="banner">
     <swiper
+      :initial-slide="2"
       :slides-per-view="2"
       :centered-slides="true"
       :space-between="0"
@@ -8,40 +10,31 @@
       :loop="true"
       :pagination="{ clickable: true }"
     >
-      <!-- :autoplay="{ delay: 1000, disableOnInteraction: false }" -->
-      <!-- <swiper :options="swiperOptions"> -->
-      <swiper-slide>
-        <a href="#"><img src="./images/banner/1.jpg" alt="" /></a>
-      </swiper-slide>
-      <swiper-slide>
-        <a href="#"><img src="./images/banner/2.jpg" alt="" /></a>
-      </swiper-slide>
-      <swiper-slide>
-        <a href="#"><img src="./images/banner/3.jpg" alt="" /></a>
-      </swiper-slide>
-      <swiper-slide>
-        <a href="#"><img src="./images/banner/4.jpg" alt="" /></a>
-      </swiper-slide>
-      <swiper-slide>
-        <a href="#"><img src="./images/banner/5.jpg" alt="" /></a>
-      </swiper-slide>
-      <swiper-slide>
-        <a href="#"><img src="./images/banner/6.png" alt="" /></a>
+      <!-- :autoplay="{ delay: 3000, disableOnInteraction: false }" 
+       -->
+      <swiper-slide
+        v-for="(banner, index) in banners"
+        :key="index"
+        :swiperIndex="index"
+        @click="clickSlide(index)"
+      >
+        <a><img :src="banner.imageUrl" alt="" /></a>
       </swiper-slide>
     </swiper>
   </div>
 </template>
 
 <script>
-import { onMounted } from "vue"
 import SwiperCore, { Navigation, Pagination, Autoplay } from "swiper"
 import { Swiper, SwiperSlide } from "swiper/vue/swiper-vue"
 import "swiper/swiper-bundle.css"
-
+import { ref, reactive, nextTick } from "vue"
+import { reqBanners } from "@/api/discovery"
 SwiperCore.use([Navigation, Pagination, Autoplay])
 export default {
   setup() {
     // swiper7似乎已经不支持将配置存放在变量并使用 <swiper :options="swiperOptions"> 方法引用
+    //#region
     // const swiperOptions = reactive({
     //   slidesPerView: 2,
     //   centeredSlides: true,
@@ -57,11 +50,23 @@ export default {
     //     disableOnInteraction: false,
     //   },
     // })
+    //#endregion
+    // let swiper = new SwiperCore()
+    let banners = reactive({})
+    ;(async function getBanner() {
+      let result = await reqBanners()
+      banners = Object.assign(banners, result.banners)
+      // console.log(banners)
+      // 等待轮播图生成后执行初始化
+      nextTick(() => {
+        _initSwiper()
+      })
+    })()
 
-    onMounted(() => {
+    function _initSwiper() {
       /*
       需求: 当鼠标进入.swiper-slide-prev图片时,图片透明度为1.当鼠标进一步进入该图片
-            上方的.swiper-button-prev按钮时,图片透明度依然为1
+            上方的.swiper-button-prev按钮时,按钮变色, 但图片透明度依然为1
             这无法用:hover伪类实现,因为鼠标从图片进入按钮时,就会失去:hover.
     */
       let sideImgs = []
@@ -115,12 +120,39 @@ export default {
       setTimeout(() => {
         let swiperSlides = document.querySelectorAll(".swiper-slide")
         swiperSlides.forEach((swiperSlide) => {
-          swiperSlide.style.setProperty("transition", "0.3s")
+          swiperSlide.style.setProperty("transition", "0.4s")
         })
       }, 100)
-    })
+    }
 
-    return {}
+    // 问题: 如果给slide中的图片包裹超链接, 那么点击两侧的图片时,会触发超链接.
+    // 解决:不给图片添加超链接.当图片被点击时,检测它是否是当前展示的图片,如果是,就打开对应的url
+    function clickSlide(index) {
+      // 获取当前图片的index
+      const slide = document.querySelector(`[swiperindex="${index}"]`)
+      const activeClass = "swiper-slide-active"
+      // 如果被点击的slide是当前处于中心展示的slide,就打开对应的链接
+      if (slide.classList.contains("swiper-slide-active")) {
+        // 如果存在对应的url
+        if (banners[index].url) {
+          window.open(banners[index].url)
+        }
+      }
+      // 如果被点击的图片是两侧的图片,就切换过去.
+      // 不能使用swiper自带的slideToClickedSlide属性. 用了它以后,点击左右两侧的图片,它们会立即获得swiper-slide-active类,这就干扰了上面的代码
+      else {
+        // 如果是左侧的图片,就让swiper向左切换一张. 右侧相同
+        if (slide.classList.contains("swiper-slide-prev")) {
+          const leftBtn = document.querySelector(".swiper-button-prev")
+          leftBtn.click()
+        } else {
+          const rightBtn = document.querySelector(".swiper-button-next")
+          rightBtn.click()
+        }
+      }
+    }
+
+    return { banners, clickSlide }
   },
   components: {
     Swiper,

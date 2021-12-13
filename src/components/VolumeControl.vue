@@ -1,3 +1,4 @@
+// 位于miniPlayer右侧的音量控制组件
 <template>
   <div class="volume-control">
     <i class="iconfont icon-zuidayinliang" @click="mute" ref="volumeIcon"></i>
@@ -58,8 +59,7 @@ export default {
     // 计算percent
     function computePercent() {
       const totalWidth = progressBar.value.clientWidth
-      const event = window.event
-      let mouseX = event.offsetX
+      let mouseX = window.event.offsetX
       // mask左侧超出轨道5px,这里减去
       percent.value = ((mouseX - 5) / totalWidth) * 100
       // 检查一下percent是否小于0或者大于100
@@ -68,7 +68,6 @@ export default {
       } else if (percent.value > 100) {
         percent.value = 100
       }
-      // console.log(percent.value)
     }
 
     // 监视percent, 根据值的大小移动slider,以及改变音量图标
@@ -140,7 +139,6 @@ export default {
   display: flex;
   align-items: center;
   margin-right: 22px;
-  margin-top: -3px;
   i {
     margin-right: 8px;
     font-size: @font-size-title;
@@ -175,8 +173,8 @@ export default {
     }
     .mask {
       position: absolute;
-      top: 0;
-      bottom: 0;
+      top: -10px;
+      bottom: -10px;
       left: -5px;
       right: -10px;
     }

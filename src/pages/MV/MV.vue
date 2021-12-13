@@ -1,3 +1,4 @@
+// mv播放页面 一级路由
 <template>
   <div class="mv">
     <div class="left">

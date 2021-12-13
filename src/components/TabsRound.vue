@@ -1,3 +1,4 @@
+// 标签组 包含多组不同分类的标签, 被选中的标签以圆角高亮显示
 <template>
   <div class="tabs-round">
     <div class="tabs-row" v-for="(row, key, index) in tabs" :key="index">

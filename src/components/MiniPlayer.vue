@@ -1,42 +1,41 @@
+// 页面底部的长条形播放器
 <template>
   <div class="mini-player">
     <div class="song">
-      <div class="img-part">
+      <div class="img-part" @click="clickExpandShrink">
         <img src="@/pages/NewSongs/images/1.jpg" alt="" />
         <div class="expand-shrink">
-          <i
-            class="iconfont icon-upward"
-            ref="expandShrinkIcon"
-            @click="clickExpandShrinkIcon"
-          ></i>
+          <i class="iconfont icon-upward" ref="expandShrinkIcon"></i>
         </div>
       </div>
       <div class="content">
         <div class="info">
-          <span class="name">I Still Have Faith In You</span>
+          <span class="name">Someone Like You</span>
           <span class="split">-</span>
-          <span class="author">ABBA</span>
+          <span class="author">Adele</span>
         </div>
         <div class="time">
           <span class="current-time">00:00</span>
           <span class="split">/</span>
-          <span class="total-time">05:09</span>
+          <span class="total-time">04:09</span>
         </div>
       </div>
     </div>
     <div class="options">
       <div class="icon-wrapper"><i class="iconfont icon-fenxiang"></i></div>
       <div class="icon-wrapper play-mode">
-        <i
-          class="iconfont icon-mayi-shunxubofang"
-          ref="playModeBtn"
-          @click="clickPlayModeBtn"
-        ></i>
-        <div class="play-mode-bubble">{{ playModeText }}</div>
+        <i class="iconfont icon-mayi-shunxubofang" ref="playModeBtn" @click="clickPlayModeBtn"></i>
+        <div class="mini-player-bubble play-mode-bubble">{{ playModeText }}</div>
       </div>
-      <div class="icon-wrapper"><i class="iconfont icon-gedan"></i></div>
+      <div class="icon-wrapper play-list">
+        <i class="iconfont icon-gedan" ref="playListBtn" @click="clickPlayListIcon"></i>
+        <!-- 现在的功能是点击按钮后弹出,后面必须要改成:歌单更新后弹出该气泡-->
+        <div class="mini-player-bubble play-list-bubble">已更新歌单</div>
+      </div>
       <VolumeControl></VolumeControl>
-      <div class="icon-wrapper"><i class="iconfont icon-gitee2"></i></div>
+      <div class="icon-wrapper">
+        <a href="https://gitee.com/zzr771/online-player"><i class="iconfont icon-gitee2"></i></a>
+      </div>
     </div>
     <div class="control">
       <i class="iconfont icon-prev side left"></i>
@@ -45,31 +44,29 @@
       </span>
       <i class="iconfont icon-prev side right"></i>
     </div>
+    <PlayProgress></PlayProgress>
   </div>
 </template>
 
 <script>
 import VolumeControl from "@/components/VolumeControl"
-import { ref, onMounted } from "vue"
+import PlayProgress from "@/components/PlayProgress"
+import { ref, onMounted, computed } from "vue"
+import { useStore } from "vuex"
 export default {
   setup() {
-    const expandShrinkIcon = ref(null)
-    // 点击歌曲图标时, 展开/收回播放页, 并切换图标
-    function clickExpandShrinkIcon() {
-      // 切换图标
-      expandShrinkIcon.value.classList.toggle("icon-upward")
-      expandShrinkIcon.value.classList.toggle("icon-down")
-    }
+    const store = useStore()
 
     const playIcon = ref(null)
-    // 点击播放按钮后的处理函数
+    // 点击播放按钮后改变播放图标,播放/暂停歌曲
     function clickPlayIcon() {
       playIcon.value.classList.toggle("icon-bofang")
       playIcon.value.classList.toggle("icon-24gf-pause2")
     }
 
+    // 点击"播放模式"按钮后,气泡内文字循环变化
     const playModeBtn = ref(null)
-    // 当前的播放模式  0:顺序  1:单曲循环  2:随机
+    // 当前的播放模式  0:顺序播放  1:单曲循环  2:随机播放
     let playMode = 0
     let playModeText = ref("顺序播放")
     // 点击播放模式后的处理函数: 在三个模式之间循环,并更换提示框内的文字
@@ -81,32 +78,40 @@ export default {
         case 0:
           // 从随机变成顺序
           playModeText.value = "顺序播放"
-          playModeBtn.value.classList.remove("icon-suijibofang")
-          playModeBtn.value.classList.add("icon-mayi-shunxubofang")
+          changeIconTo("icon-mayi-shunxubofang")
           break
         case 1:
           // 从顺序变成单曲循环
           playModeText.value = "单曲循环"
-          playModeBtn.value.classList.remove("icon-mayi-shunxubofang")
-          playModeBtn.value.classList.add("icon-danquxunhuan")
+          changeIconTo("icon-danquxunhuan")
           break
         case 2:
           // 从单曲循环变成随机
           playModeText.value = "随机播放"
-          playModeBtn.value.classList.remove("icon-danquxunhuan")
-          playModeBtn.value.classList.add("icon-suijibofang")
+          changeIconTo("icon-suijibofang")
           break
       }
     }
-    //
+    function changeIconTo(iconName) {
+      playModeBtn.value.classList.remove("icon-danquxunhuan", "icon-suijibofang", "icon-mayi-shunxubofang")
+      playModeBtn.value.classList.add(iconName)
+    }
+
+    // 点击"播放列表"按钮后,气泡出现然后自动消失
+    let playListBtn = ref(null)
+
     onMounted(() => {
+      // "播放模式"气泡的弹出和隐藏
+      // 弹出
       playModeBtn.value.onmouseover = () => {
         const playModeBubble = document.querySelector(".play-mode-bubble")
+        // display和.show类名的改变不能同步进行,否则display的改变会使过渡效果失效
         playModeBubble.style.setProperty("display", "block")
         setTimeout(() => {
           playModeBubble.classList.add("show")
         })
       }
+      // 隐藏
       playModeBtn.value.onmouseout = () => {
         const playModeBubble = document.querySelector(".play-mode-bubble")
         playModeBubble.classList.remove("show")
@@ -114,19 +119,58 @@ export default {
           playModeBubble.style.setProperty("display", "none")
         }, 300)
       }
+
+      // "播放列表"气泡的弹出和隐藏
+      playListBtn.value.onclick = () => {
+        const playListBubble = document.querySelector(".play-list-bubble")
+        // 弹出
+        playListBubble.style.setProperty("display", "block")
+        setTimeout(() => {
+          playListBubble.classList.add("show")
+        })
+        // 延时2秒后隐藏
+        setTimeout(() => {
+          playListBubble.classList.remove("show")
+          setTimeout(() => {
+            playListBubble.style.setProperty("display", "none")
+          }, 300)
+        }, 2000)
+      }
     })
+
+    // 点击"播放列表"图标后,显示/隐藏播放列表
+    function clickPlayListIcon() {
+      store.commit("music/toggleShowPlayList")
+    }
+
+    // 点击歌曲图片后, 弹出/隐藏播放页面, 并切换图标
+    const expandShrinkIcon = ref(null)
+    function clickExpandShrink() {
+      store.commit("music/toggleShowPlayPage")
+      let showPlayPage = computed(() => store.state.music.showPlayPage)
+      // 如果showPlayPage值为true
+      if (showPlayPage.value) {
+        expandShrinkIcon.value.classList.remove("icon-upward")
+        expandShrinkIcon.value.classList.add("icon-down")
+      } else {
+        expandShrinkIcon.value.classList.add("icon-upward")
+        expandShrinkIcon.value.classList.remove("icon-down")
+      }
+    }
 
     return {
       expandShrinkIcon,
       playIcon,
-      clickExpandShrinkIcon,
       clickPlayIcon,
       playModeBtn,
       clickPlayModeBtn,
+      playListBtn,
       playModeText,
+      clickPlayListIcon,
+      clickExpandShrink,
     }
   },
-  components: { VolumeControl },
+  components: { VolumeControl, PlayProgress },
 }
 </script>
 
@@ -140,8 +184,9 @@ export default {
   right: 0;
   bottom: 0;
   z-index: 2000;
-  height: 60px;
+  height: @mini-player-height;
   padding: 8px 24px 8px 24px;
+  background-color: var(--body-bgcolor);
   .song {
     display: flex;
     height: 100%;
@@ -248,46 +293,70 @@ export default {
   }
   .options {
     display: flex;
+    margin-top: 3px;
     align-items: center;
     .icon-wrapper {
       margin-right: 16px;
-      font-size: @font-size-title;
       i {
+        font-size: @font-size-title;
         cursor: pointer;
+      }
+      a {
+        text-decoration: none;
+        color: var(--font-color);
+        transition: 0.3s;
+        &:hover {
+          color: #c71d23;
+        }
+        i {
+          font-size: 18px;
+        }
       }
     }
     .play-mode {
       position: relative;
       .play-mode-bubble {
-        position: absolute;
-        z-index: 100;
         top: -60px;
         left: -73px;
         width: 120px;
         height: 45px;
         line-height: $height;
-        text-align: center;
-        border-radius: 5px;
-        background-color: #fff;
-        box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
-        font-size: @font-size-medium-sm;
-
-        transition: 0.3s;
-        display: none;
-        opacity: 0;
-        &.show {
-          opacity: 1;
-        }
-        &::after {
-          content: "";
-          position: absolute;
-          z-index: 101;
-          bottom: -6px;
-          left: 63%;
-          border: 6px solid;
-          border-bottom: none;
-          border-color: #fff transparent;
-        }
+      }
+    }
+    .play-list {
+      position: relative;
+      .play-list-bubble {
+        top: -60px;
+        left: -73px;
+        width: 120px;
+        height: 45px;
+        line-height: $height;
+      }
+    }
+    // bubble的公用样式
+    .mini-player-bubble {
+      position: absolute;
+      z-index: 900;
+      text-align: center;
+      border-radius: 5px;
+      background-color: #fff;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+      font-size: @font-size-medium-sm;
+      transition: 0.3s;
+      display: none;
+      opacity: 0;
+      &.show {
+        opacity: 1;
+      }
+      &::after {
+        content: "";
+        position: absolute;
+        z-index: 101;
+        bottom: -6px;
+        left: 63%;
+        border: 6px solid;
+        border-bottom: none;
+        border-color: #fff transparent;
       }
     }
   }

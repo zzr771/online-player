@@ -1,8 +1,7 @@
+// 位于header右侧, 加载和切换主题色的组件
 <template>
   <div class="theme">
-    <span class="icon-wrapper" @click="showOptionsFn"
-      ><i class="iconfont icon-pifu"></i
-    ></span>
+    <span class="icon-wrapper" @click="showOptionsFn"><i class="iconfont icon-pifu"></i></span>
     <div class="options" v-show="showOptions">
       <div
         class="option"

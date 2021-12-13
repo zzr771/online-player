@@ -1,3 +1,4 @@
+// 位于"最新mv"页面的, 长方形MV单元
 <template>
   <div class="mv-card" @click="routeGo">
     <div class="img-part">
@@ -6,9 +7,7 @@
         <i class="iconfont icon-bofang"></i>
         2313
       </div>
-      <div class="play-icon">
-        <i class="iconfont icon-bofang"></i>
-      </div>
+      <PlayIcon :size="45"></PlayIcon>
     </div>
     <p class="name">Por Amor al Arte (Video Oficial)</p>
     <p class="author">Sergio Dalma</p>
@@ -17,6 +16,7 @@
 
 <script>
 import { useRouter } from "vue-router"
+import PlayIcon from "@/components/PlayIcon"
 export default {
   setup() {
     const router = useRouter()
@@ -26,6 +26,7 @@ export default {
 
     return { routeGo }
   },
+  components: { PlayIcon },
 }
 </script>
 
@@ -38,9 +39,6 @@ export default {
   cursor: pointer;
   .img-part {
     position: relative;
-    &:hover .play-icon {
-      opacity: 1;
-    }
     img {
       width: 100%;
       border-radius: 5px;
@@ -53,25 +51,6 @@ export default {
       color: #fff;
       i {
         font-size: 100%;
-      }
-    }
-    .play-icon {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      width: 48px;
-      height: $width;
-      line-height: $height;
-      text-align: center;
-      border-radius: 50%;
-      background-color: @font-color-transparent;
-      transition: 0.4s;
-      opacity: 0;
-      i {
-        font-size: 18px;
-        vertical-align: middle;
-        color: @theme-color;
       }
     }
   }

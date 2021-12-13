@@ -1,10 +1,9 @@
+// 位于MV播放页面右侧的, 长方形小MV单元
 <template>
   <div class="mv-card-mini">
     <div class="img-part">
       <img src="@/pages/MV/images/MVmini/1.jpg" alt="" />
-      <div class="play-icon">
-        <i class="iconfont icon-bofang"></i>
-      </div>
+      <PlayIcon :size="36"></PlayIcon>
       <div class="play-count"><i class="iconfont icon-bofang"></i> 2435</div>
       <div class="duration">05:19</div>
     </div>
@@ -16,7 +15,10 @@
 </template>
 
 <script>
-export default {}
+import PlayIcon from "@/components/PlayIcon"
+export default {
+  components: { PlayIcon },
+}
 </script>
 
 <style lang="less" scoped>
@@ -30,32 +32,10 @@ export default {}
   .img-part {
     position: relative;
     margin-right: 8px;
-    &:hover .play-icon {
-      opacity: 1;
-    }
     img {
       width: 140px;
       height: 76px;
       border-radius: 4px;
-    }
-    .play-icon {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      width: 36px;
-      height: $width;
-      line-height: $height;
-      text-align: center;
-      border-radius: 50%;
-      background-color: @font-color-transparent;
-      transition: 0.3s;
-      opacity: 0;
-      i {
-        color: @theme-color;
-        font-size: 100%;
-        margin-left: 2px;
-      }
     }
     .play-count {
       position: absolute;
