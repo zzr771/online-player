@@ -10,15 +10,10 @@
       :loop="true"
       :pagination="{ clickable: true }"
     >
-      <!-- :autoplay="{ delay: 3000, disableOnInteraction: false }" 
+      <!-- :autoplay="{ delay: 4000, disableOnInteraction: false }" 
        -->
-      <swiper-slide
-        v-for="(banner, index) in banners"
-        :key="index"
-        :swiperIndex="index"
-        @click="clickSlide(index)"
-      >
-        <a><img :src="banner.imageUrl" alt="" /></a>
+      <swiper-slide v-for="(banner, index) in banners" :key="index" @click="clickSlide(index, $event)">
+        <img :src="banner.imageUrl" alt="" />
       </swiper-slide>
     </swiper>
   </div>
@@ -75,21 +70,24 @@ export default {
       let btns = []
       btns[0] = document.querySelector(".swiper-button-next")
       btns[1] = document.querySelector(".swiper-button-prev")
-      // 鼠标进入图片,添加on-hover类; 离开图片,去除on-hover类
-      sideImgs.forEach((img) => {
-        img.onmouseenter = () => {
-          img.classList.add("on-hover")
+      // 如果左右两侧图片都存在
+      if (sideImgs[0] && sideImgs[1]) {
+        // 鼠标进入图片,添加on-hover类; 离开图片,去除on-hover类
+        sideImgs.forEach((img) => {
+          img.onmouseenter = () => {
+            img.classList.add("on-hover")
+          }
+          img.onmouseleave = () => {
+            img.classList.remove("on-hover")
+          }
+        })
+        // 鼠标进入按钮,就给该按钮下方的图片添加on-hover类
+        btns[0].onmouseenter = () => {
+          sideImgs[0].classList.add("on-hover")
         }
-        img.onmouseleave = () => {
-          img.classList.remove("on-hover")
+        btns[1].onmouseenter = () => {
+          sideImgs[1].classList.add("on-hover")
         }
-      })
-      // 鼠标进入按钮,就给该按钮下方的图片添加on-hover类
-      btns[0].onmouseenter = () => {
-        sideImgs[0].classList.add("on-hover")
-      }
-      btns[1].onmouseenter = () => {
-        sideImgs[1].classList.add("on-hover")
       }
 
       //鼠标进入轮播图, 再显示左右按钮
@@ -127,10 +125,9 @@ export default {
 
     // 问题: 如果给slide中的图片包裹超链接, 那么点击两侧的图片时,会触发超链接.
     // 解决:不给图片添加超链接.当图片被点击时,检测它是否是当前展示的图片,如果是,就打开对应的url
-    function clickSlide(index) {
-      // 获取当前图片的index
-      const slide = document.querySelector(`[swiperindex="${index}"]`)
-      const activeClass = "swiper-slide-active"
+    function clickSlide(index, event) {
+      // 被点击的slide
+      const slide = event.target.parentNode
       // 如果被点击的slide是当前处于中心展示的slide,就打开对应的链接
       if (slide.classList.contains("swiper-slide-active")) {
         // 如果存在对应的url
@@ -196,16 +193,13 @@ export default {
       &.on-hover {
         opacity: 1;
       }
-      a {
+      img {
+        border-radius: 5px;
         width: 100%;
-        img {
-          border-radius: 5px;
-          width: 100%;
-          /*
+        /*
             加最大宽度是为了让轮播图出现时的动作不至于太夸张
           */
-          max-width: 500px;
-        }
+        max-width: 500px;
       }
     }
     .swiper-slide-next {

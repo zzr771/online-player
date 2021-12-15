@@ -12,6 +12,11 @@ module.exports = {
         changeOrigin: true,
         secure: false,
       },
+      // "http://m10.music.126.net/": {
+      //   target: "http://m10.music.126.net/",
+      //   changeOrigin: true,
+      //   secure: false,
+      // },
     },
   },
   configureWebpack: {

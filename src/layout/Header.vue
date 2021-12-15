@@ -6,17 +6,17 @@
         <li class="button home" @click="$router.push('/')">
           <i class="iconfont icon-shouye1"></i>
         </li>
-        <li class="button exitFullScreen">
+        <li class="button exitFullScreen" @click="closeFullScreen">
           <i class="iconfont icon-quxiaoquanping_huaban"></i>
         </li>
-        <li class="button fullScreen"><i class="iconfont icon-quanping"></i></li>
+        <li class="button fullScreen" @click="openFullScreen"><i class="iconfont icon-quanping"></i></li>
       </ul>
       <!-- 展示/隐藏播放页 -->
-      <div class="shrink-player">
+      <div class="shrink-play-page" v-if="showPlayPage" @click="clickShrinkPlayPage">
         <span><i class="iconfont icon-down"></i></span>
       </div>
       <!-- 路由前进/后退 -->
-      <RouteControl></RouteControl>
+      <RouteControl v-if="!showPlayPage"></RouteControl>
     </div>
     <div class="right">
       <!-- 搜索栏 -->
@@ -31,7 +31,26 @@
 import Theme from "@/components/Theme"
 import RouteControl from "@/components/RouteControl"
 import SearchInHeader from "@/components/SearchInHeader"
+import { fullScreen, exitFullscreen } from "@/utils/common"
+import { computed } from "vue"
+import { useStore } from "vuex"
 export default {
+  setup() {
+    function openFullScreen() {
+      fullScreen()
+    }
+    function closeFullScreen() {
+      exitFullscreen()
+    }
+
+    const store = useStore()
+    let showPlayPage = computed(() => store.state.music.showPlayPage)
+    function clickShrinkPlayPage() {
+      store.commit("music/toggleShowPlayPage")
+    }
+
+    return { openFullScreen, closeFullScreen, showPlayPage, clickShrinkPlayPage }
+  },
   components: { Theme, RouteControl, SearchInHeader },
 }
 </script>
@@ -82,7 +101,7 @@ export default {
         }
       }
     }
-    .shrink-player {
+    .shrink-play-page {
       display: flex;
       margin-left: 20px;
       span {

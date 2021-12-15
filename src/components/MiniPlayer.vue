@@ -9,7 +9,7 @@
         </div>
       </div>
       <div class="content">
-        <div class="info">
+        <div class="info" @click="playSong">
           <span class="name">Someone Like You</span>
           <span class="split">-</span>
           <span class="author">Adele</span>
@@ -40,28 +40,34 @@
     <div class="control">
       <i class="iconfont icon-prev side left"></i>
       <span class="play-icon" @click="clickPlayIcon">
-        <i class="iconfont icon-bofang" ref="playIcon"></i>
+        <i class="iconfont" :class="{ 'icon-bofang': !isPlaying, 'icon-24gf-pause2': isPlaying }"></i>
       </span>
       <i class="iconfont icon-prev side right"></i>
     </div>
     <PlayProgress></PlayProgress>
+    <audio ref="audio" @canplay="ready" @timeupdate="updateTime" :src="songURL"></audio>
+
+    <!-- https://music.163.com/song/media/outer/url?id=16435049.mp3
+     -->
   </div>
 </template>
 
 <script>
 import VolumeControl from "@/components/VolumeControl"
 import PlayProgress from "@/components/PlayProgress"
-import { ref, onMounted, computed } from "vue"
+import { ref, onMounted, computed, watch, provide } from "vue"
 import { useStore } from "vuex"
 export default {
   setup() {
     const store = useStore()
+    // 是否正在播放,核心变量,由该变量决定播放/暂停
+    let isPlaying = computed(() => store.state.music.isPlaying)
 
-    const playIcon = ref(null)
-    // 点击播放按钮后改变播放图标,播放/暂停歌曲
+    //----------------------------------和处理页面显示的相关代码---------------------------
+
+    // 点击播放按钮后播放/暂停歌曲
     function clickPlayIcon() {
-      playIcon.value.classList.toggle("icon-bofang")
-      playIcon.value.classList.toggle("icon-24gf-pause2")
+      store.commit("music/updateIsPlaying", { isPlaying: !isPlaying.value })
     }
 
     // 点击"播放模式"按钮后,气泡内文字循环变化
@@ -158,9 +164,46 @@ export default {
       }
     }
 
+    //---------------------------------和处理歌曲播放的相关代码--------------------------
+    // 播放器
+    let audio = ref(null)
+
+    watch(isPlaying, (newValue) => {
+      // 如果正在播放
+      if (newValue) {
+        audio.value.play()
+      } else {
+        audio.value.pause()
+      }
+    })
+
+    // 当歌曲加载完毕,开始播放
+    function ready() {
+      store.commit("music/updateIsPlaying", { isPlaying: true })
+      console.log("ready")
+    }
+
+    function updateTime(e) {
+      let time = e.target.currentTime
+      store.commit("music/updateCurrentTime", { time })
+    }
+
+    // 当进度条被点击或者拖动时触发的回调
+    function setCurrentTime(time) {
+      audio.value.currentTime = time
+      store.commit("music/updateCurrentTime", { time })
+    }
+    // 把回调传递给子组件PlayProgress
+    provide("setCurrentTime", setCurrentTime)
+
+    // 临时测试添加的变量和函数
+    let songURL = ref("")
+    function playSong() {
+      songURL.value = require("/static/song/SomeoneLikeYou.mp3")
+    }
+
     return {
       expandShrinkIcon,
-      playIcon,
       clickPlayIcon,
       playModeBtn,
       clickPlayModeBtn,
@@ -168,6 +211,13 @@ export default {
       playModeText,
       clickPlayListIcon,
       clickExpandShrink,
+
+      audio,
+      ready,
+      isPlaying,
+      songURL,
+      updateTime,
+      playSong,
     }
   },
   components: { VolumeControl, PlayProgress },

@@ -3,11 +3,11 @@
   <div class="play-page" v-if="true" :class="{ hide: !showPlayPage }">
     <div class="content-wrapper">
       <div class="song">
-        <div class="rotating-album" @click="playing = !playing">
+        <div class="rotating-album">
           <img src="@/assets/images/play-bar-bearing.png" alt="" class="play-bar-bearing" />
-          <img src="@/assets/images/play-bar.png" alt="" class="play-bar" :class="{ playing: playing }" />
+          <img src="@/assets/images/play-bar.png" alt="" class="play-bar" :class="{ playing: isPlaying }" />
           <div class="img-outer-border">
-            <div class="img-inner-border" :class="{ paused: !playing }">
+            <div class="img-inner-border" :class="{ paused: !isPlaying }">
               <img src="@/assets/images/album-cover.jpg" alt="" class="album-cover" />
             </div>
           </div>
@@ -66,7 +66,6 @@ import Comments from "@/components/Comments"
 import SongCardMini from "@/components/SongCardMini"
 export default {
   setup() {
-    let playing = ref(false)
     // 解析后的歌词,类型为数组,每个元素都是对象,包含一句歌词的信息(时间,原文歌词,译文歌词). 结构: {time,contents:[lyric,tlyric]}
     let parsedLyric = reactive([])
     let noLyric = ref(true)
@@ -85,7 +84,8 @@ export default {
 
     const store = useStore()
     let showPlayPage = computed(() => store.state.music.showPlayPage)
-    return { playing, noLyric, parsedLyric, showPlayPage }
+    let isPlaying = computed(() => store.state.music.isPlaying)
+    return { noLyric, parsedLyric, showPlayPage, isPlaying }
   },
   components: { Scroller, Comments, SongCardMini },
 }
