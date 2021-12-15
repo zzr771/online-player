@@ -9,11 +9,13 @@
 
 <script>
 // 该组件还需添加的功能: 当没有歌曲处于播放状态时, 点击进度条没有响应
-import { ref, onMounted, watch } from "vue"
+import { ref, onMounted, watch, computed, inject } from "vue"
+import { useStore } from "vuex"
 export default {
   setup() {
+    const store = useStore()
     // 本组件核心变量  当前播放到的时刻
-    let playingTime = ref(0)
+    let currentTime = computed(() => store.state.music.currentTime)
     // 歌的时长, 单位:秒
     let totalTime = 309
 
@@ -23,6 +25,7 @@ export default {
     let mask = ref(null)
 
     onMounted(() => {
+      // 需求:鼠标按下时不做处理, 左键按下并且移动时让进度条跟着移动,左键松开时重新计算currentTime
       // 鼠标左键在mask内部按下时, 绑定事件回调
       mask.value.onmousedown = () => {
         document.onmousemove = computeTime
@@ -37,29 +40,30 @@ export default {
       }
     })
 
+    const setCurrentTime = inject("setCurrentTime")
     function computeTime() {
       const mouseX = window.event.clientX
       const totalWidth = playProgress.value.clientWidth
-      playingTime.value = (mouseX / totalWidth) * totalTime
+      const time = (mouseX / totalWidth) * totalTime
+      // 调用miniPlayer中的函数,在miniPlayer中修改currentTime
+      setCurrentTime(time)
     }
 
-    watch(playingTime, (newValue) => {
+    watch(currentTime, (newValue) => {
       moveSlider(newValue)
     })
     function moveSlider(time) {
       const totalWidth = playProgress.value.clientWidth
       let position = (time / totalTime) * totalWidth
-
       // 红色轨道的长度不用修正
       trackLeft.value.style.width = position + "px"
-
       // 向左修正半个slider的宽度
       const correction = slider.value.clientWidth / 2
       position = position - correction
       slider.value.style.left = position + "px"
     }
 
-    return { playProgress, trackLeft, slider, mask }
+    return { playProgress, trackLeft, slider, mask, currentTime }
   },
 }
 </script>
