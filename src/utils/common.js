@@ -30,3 +30,17 @@ export function exitFullscreen() {
     document.msExitFullscreen()
   }
 }
+
+// 节流
+export function throttle(callback, interval) {
+  let timer = 0
+  return function () {
+    if (timer) {
+      return
+    }
+    timer = setTimeout(() => {
+      callback && callback()
+      timer = 0
+    }, interval)
+  }
+}
