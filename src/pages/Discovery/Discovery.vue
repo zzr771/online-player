@@ -2,7 +2,7 @@
 <template>
   <div class="discovery">
     <!-- 轮播图 -->
-    <!-- <Banner></Banner> -->
+    <Banner></Banner>
     <!-- 推荐歌单 -->
     <List></List>
     <!-- 最新音乐 -->

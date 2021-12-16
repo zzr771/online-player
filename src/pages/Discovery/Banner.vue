@@ -12,7 +12,7 @@
     >
       <!-- :autoplay="{ delay: 4000, disableOnInteraction: false }" 
        -->
-      <swiper-slide v-for="(banner, index) in banners" :key="index" @click="clickSlide(index, $event)">
+      <swiper-slide v-for="(banner, index) in banners" :key="index" @click="clickSlide(index)">
         <img :src="banner.imageUrl" alt="" />
       </swiper-slide>
     </swiper>
@@ -125,9 +125,9 @@ export default {
 
     // 问题: 如果给slide中的图片包裹超链接, 那么点击两侧的图片时,会触发超链接.
     // 解决:不给图片添加超链接.当图片被点击时,检测它是否是当前展示的图片,如果是,就打开对应的url
-    function clickSlide(index, event) {
+    function clickSlide(index) {
       // 被点击的slide
-      const slide = event.target.parentNode
+      const slide = window.event.target.parentNode
       // 如果被点击的slide是当前处于中心展示的slide,就打开对应的链接
       if (slide.classList.contains("swiper-slide-active")) {
         // 如果存在对应的url
