@@ -7,6 +7,8 @@ export default {
   currentTime: 0,
   // 是否展示歌曲播放页
   showPlayPage: false,
+  // 播放列表
+  playList: [],
   // 是否展示播放列表
   showPlayList: false,
 }

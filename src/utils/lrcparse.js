@@ -47,7 +47,7 @@ function parseLyric(lrc) {
     // 时间转化为秒
     const totelTime = Number(hour ? hour * 3600 : 0) + Number(min * 60) + Number(sec) + Number(msec / 1000)
 
-    lyricObjs.push({ time: totelTime, content: [content] })
+    lyricObjs.push({ time: totelTime, contents: [content] })
   })
   return lyricObjs
 }
@@ -60,7 +60,7 @@ function lyricMix(foreignLrcArr, chineseLrcArr) {
     })
     // 如果找到了时间相同的译文歌词,就把歌词添加进fl中. 没找到就什么都不做
     if (sameLyric) {
-      fl.content.push(sameLyric.content[0])
+      fl.contents.push(sameLyric.contents[0])
     }
   })
 }

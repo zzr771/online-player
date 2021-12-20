@@ -44,3 +44,33 @@ export function throttle(callback, interval) {
     }, interval)
   }
 }
+
+// 把秒数变成标准时间格式字符串
+export function parseTime(time) {
+  let h, min, sec
+  let timeStr
+  time = Math.round(time)
+  h = Math.floor(time / 3600)
+  if (h > 0) {
+    min = Math.floor((time - 3600 * h) / 60)
+    sec = (time - 3600 * h) % 60
+    timeStr =
+      `${h < 10 ? "0" + h : h}` +
+      ":" +
+      `${min < 10 ? "0" + min : min}` +
+      ":" +
+      `${sec < 10 ? "0" + sec : sec}`
+  } else {
+    min = Math.floor(time / 60)
+    sec = time % 60
+    timeStr = `${min < 10 ? "0" + min : min}` + ":" + `${sec < 10 ? "0" + sec : sec}`
+  }
+  return timeStr
+}
+
+// 获得指定尺寸的图片url
+export function genImgURL(url, width, height) {
+  if (!height) height = width
+  url += `?param=${width}y${height}`
+  return url
+}
