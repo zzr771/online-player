@@ -6,7 +6,10 @@ const routes = [
     path: "/discovery",
     component: () => import("@/pages/Discovery/Discovery"),
     meta: {
+      // 是否显示左侧菜单栏
       showSideMenu: true,
+      // 是否开启keep-alive
+      keepAlive: true,
     },
   },
   {
@@ -15,6 +18,7 @@ const routes = [
     component: () => import("@/pages/RecLists/RecLists"),
     meta: {
       showSideMenu: true,
+      keepAlive: true,
     },
   },
   {
@@ -23,6 +27,7 @@ const routes = [
     component: () => import("@/pages/NewSongs/NewSongs"),
     meta: {
       showSideMenu: true,
+      keepAlive: true,
     },
   },
   {
@@ -31,6 +36,7 @@ const routes = [
     component: () => import("@/pages/NewMVs/NewMVs"),
     meta: {
       showSideMenu: true,
+      keepAlive: true,
     },
   },
   {
@@ -40,6 +46,9 @@ const routes = [
     component: () => import("@/pages/MV/MV"),
     meta: {
       showSideMenu: false,
+      keepAlive: true,
+      // 切换到该路由页时, 页面是否自动回到顶部
+      autoTop: true,
     },
   },
   {
@@ -91,7 +100,9 @@ const routes = [
   },
 ]
 
-export default createRouter({
+const router = createRouter({
   history: createWebHistory(),
   routes,
 })
+
+export default router
