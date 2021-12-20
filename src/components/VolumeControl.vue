@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import { ref, onMounted, watch } from "vue"
+import { ref, onMounted, watch, inject } from "vue"
 export default {
   setup() {
     // 此组件的核心变量. slider的X坐标相对轨道总长度的百分比,也即音量百分比.
@@ -72,9 +72,12 @@ export default {
 
     // 监视percent, 根据值的大小移动slider,以及改变音量图标
     const volumeIcon = ref(null)
+    const setVolume = inject("setVolume")
     watch(percent, (newValue) => {
+      // 移动滑块
       moveSlider(newValue)
-
+      // 改变音量
+      setVolume(newValue)
       // 修改音量图标
       switch (true) {
         case newValue === 0:

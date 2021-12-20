@@ -1,42 +1,49 @@
 // 页面底部的长条形播放器
 <template>
   <div class="mini-player">
-    <div class="song">
+    <!-- 左 -->
+    <div class="song" v-if="currentSong.id">
       <div class="img-part" @click="clickExpandShrink">
-        <img src="@/pages/NewSongs/images/1.jpg" alt="" />
+        <img :src="currentSong.img" alt="" />
         <div class="expand-shrink">
           <i class="iconfont icon-upward" ref="expandShrinkIcon"></i>
         </div>
       </div>
       <div class="content">
         <div class="info" @click="playSong">
-          <span class="name">Someone Like You</span>
+          <span class="name">{{ currentSong.name }}</span>
           <span class="split">-</span>
-          <span class="author">Adele</span>
+          <span class="author">{{ currentSong.artistsText }}</span>
         </div>
         <div class="time">
-          <span class="current-time">00:00</span>
+          <span class="current-time">{{ parsedCurrentTime }}</span>
           <span class="split">/</span>
-          <span class="total-time">04:09</span>
+          <span class="total-time">{{ parsedTotalTime }}</span>
         </div>
       </div>
     </div>
+    <!-- 占位,当<div class="song">被隐藏时,防止<div class="control">蹿到左边来 -->
+    <div v-else></div>
+    <!-- 右 -->
     <div class="options">
       <div class="icon-wrapper"><i class="iconfont icon-fenxiang"></i></div>
       <div class="icon-wrapper play-mode">
         <i class="iconfont icon-mayi-shunxubofang" ref="playModeBtn" @click="clickPlayModeBtn"></i>
-        <div class="mini-player-bubble play-mode-bubble">{{ playModeText }}</div>
+        <div class="mini-player-bubble play-mode-bubble" ref="playModeBubble">{{ playModeText }}</div>
       </div>
       <div class="icon-wrapper play-list">
         <i class="iconfont icon-gedan" ref="playListBtn" @click="clickPlayListIcon"></i>
         <!-- 现在的功能是点击按钮后弹出,后面必须要改成:歌单更新后弹出该气泡-->
-        <div class="mini-player-bubble play-list-bubble">已更新歌单</div>
+        <div class="mini-player-bubble play-list-bubble" ref="playListBubble">已更新歌单</div>
       </div>
       <VolumeControl></VolumeControl>
       <div class="icon-wrapper">
-        <a href="https://gitee.com/zzr771/online-player"><i class="iconfont icon-gitee2"></i></a>
+        <a href="https://gitee.com/zzr771/online-player" target="_blank"
+          ><i class="iconfont icon-gitee2"></i
+        ></a>
       </div>
     </div>
+    <!-- 中 -->
     <div class="control">
       <i class="iconfont icon-prev side left"></i>
       <span class="play-icon" @click="clickPlayIcon">
@@ -45,7 +52,7 @@
       <i class="iconfont icon-prev side right"></i>
     </div>
     <PlayProgress></PlayProgress>
-    <audio ref="audio" @canplay="ready" @timeupdate="updateTime" :src="songURL"></audio>
+    <audio ref="audio" @canplay="ready" @timeupdate="updateTime" :src="currentSong.url"></audio>
 
     <!-- https://music.163.com/song/media/outer/url?id=16435049.mp3
      -->
@@ -55,6 +62,7 @@
 <script>
 import VolumeControl from "@/components/VolumeControl"
 import PlayProgress from "@/components/PlayProgress"
+import { parseTime } from "@/utils/common"
 import { ref, onMounted, computed, watch, provide } from "vue"
 import { useStore } from "vuex"
 export default {
@@ -62,9 +70,11 @@ export default {
     const store = useStore()
     // 是否正在播放,核心变量,由该变量决定播放/暂停
     let isPlaying = computed(() => store.state.music.isPlaying)
+    // 当前的歌曲, 核心变量. 当currentSong变化时,<audio>的src跟着变化,就重新加载
+    let currentSong = computed(() => store.state.music.currentSong)
+    let currentTime = computed(() => store.state.music.currentTime)
 
-    //----------------------------------和处理页面显示的相关代码---------------------------
-
+    //----------------------------------处理页面显示的相关代码-------------------------------
     // 点击播放按钮后播放/暂停歌曲
     function clickPlayIcon() {
       store.commit("music/updateIsPlaying", { isPlaying: !isPlaying.value })
@@ -105,40 +115,39 @@ export default {
 
     // 点击"播放列表"按钮后,气泡出现然后自动消失
     let playListBtn = ref(null)
-
+    let playModeBubble = ref(null)
+    let playListBubble = ref(null)
+    // 处理一些元素的显示效果
     onMounted(() => {
       // "播放模式"气泡的弹出和隐藏
       // 弹出
       playModeBtn.value.onmouseover = () => {
-        const playModeBubble = document.querySelector(".play-mode-bubble")
         // display和.show类名的改变不能同步进行,否则display的改变会使过渡效果失效
-        playModeBubble.style.setProperty("display", "block")
+        playModeBubble.value.style.setProperty("display", "block")
         setTimeout(() => {
-          playModeBubble.classList.add("show")
+          playModeBubble.value.classList.add("show")
         })
       }
       // 隐藏
       playModeBtn.value.onmouseout = () => {
-        const playModeBubble = document.querySelector(".play-mode-bubble")
-        playModeBubble.classList.remove("show")
+        playModeBubble.value.classList.remove("show")
         setTimeout(() => {
-          playModeBubble.style.setProperty("display", "none")
+          playModeBubble.value.style.setProperty("display", "none")
         }, 300)
       }
 
       // "播放列表"气泡的弹出和隐藏
       playListBtn.value.onclick = () => {
-        const playListBubble = document.querySelector(".play-list-bubble")
         // 弹出
-        playListBubble.style.setProperty("display", "block")
+        playListBubble.value.style.setProperty("display", "block")
         setTimeout(() => {
-          playListBubble.classList.add("show")
+          playListBubble.value.classList.add("show")
         })
         // 延时2秒后隐藏
         setTimeout(() => {
-          playListBubble.classList.remove("show")
+          playListBubble.value.classList.remove("show")
           setTimeout(() => {
-            playListBubble.style.setProperty("display", "none")
+            playListBubble.value.style.setProperty("display", "none")
           }, 300)
         }, 2000)
       }
@@ -164,7 +173,11 @@ export default {
       }
     }
 
-    //---------------------------------和处理歌曲播放的相关代码--------------------------
+    // 时间
+    let parsedTotalTime = computed(() => parseTime(currentSong.value.durationSecond))
+    let parsedCurrentTime = computed(() => parseTime(currentTime.value))
+
+    //---------------------------------处理歌曲播放的相关代码------------------------------
     // 播放器
     let audio = ref(null)
 
@@ -180,7 +193,8 @@ export default {
     // 当歌曲加载完毕,开始播放
     function ready() {
       store.commit("music/updateIsPlaying", { isPlaying: true })
-      console.log("ready")
+      // 如果用户在播放一首歌时点击另一首歌, 那么isPlaying始终是true,不能触发上面的watch()来自动播放. 所以这里需要开启播放
+      audio.value.play()
     }
 
     function updateTime(e) {
@@ -188,13 +202,19 @@ export default {
       store.commit("music/updateCurrentTime", { time })
     }
 
-    // 当进度条被点击或者拖动时触发的回调
+    // 播放进度控制  当进度条滑块被拖动或进度条被点击时触发
     function setCurrentTime(time) {
       audio.value.currentTime = time
       store.commit("music/updateCurrentTime", { time })
     }
     // 把回调传递给子组件PlayProgress
     provide("setCurrentTime", setCurrentTime)
+
+    // 音量控制
+    function setVolume(volume) {
+      audio.value.volume = volume / 100
+    }
+    provide("setVolume", setVolume)
 
     // 临时测试添加的变量和函数
     let songURL = ref("")
@@ -211,12 +231,18 @@ export default {
       playModeText,
       clickPlayListIcon,
       clickExpandShrink,
+      playModeBubble,
+      playListBubble,
+      parsedTotalTime,
+      parsedCurrentTime,
 
       audio,
       ready,
       isPlaying,
-      songURL,
       updateTime,
+      currentSong,
+
+      songURL,
       playSong,
     }
   },
@@ -235,7 +261,7 @@ export default {
   bottom: 0;
   z-index: 2000;
   height: @mini-player-height;
-  padding: 8px 24px 8px 24px;
+  padding: 8px 50px 8px;
   background-color: var(--body-bgcolor);
   .song {
     display: flex;

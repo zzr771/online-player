@@ -1,22 +1,31 @@
 // 位于MV播放页面中的视频播放器
 <template>
-  <div id="video-player"></div>
+  <div ref="videoPlayer" class="video-player"></div>
 </template>
 
 <script>
 import Player from "xgplayer"
 import { toRem } from "@/utils/rem"
-import { onMounted } from "vue"
+import { ref, onMounted } from "vue"
+import { useStore } from "vuex"
 export default {
-  props: ["url", "poster"],
+  props: {
+    url: String,
+    poster: String,
+  },
   setup(props) {
     onMounted(() => {
-      _initPlayer()
+      initPlayer()
     })
-    function _initPlayer() {
+
+    let videoPlayer = ref(null)
+    let myPlayer
+    function initPlayer() {
+      window.scroll(0, 0)
+      console.log(props.url)
       if (!props.url) return
-      const vp = document.getElementById("video-player")
-      const myPlayer = new Player({
+      const vp = videoPlayer.value
+      myPlayer = new Player({
         el: vp,
         url: props.url,
         poster: props.poster,
@@ -31,12 +40,24 @@ export default {
         playerHeight = toRem(parseInt(playerHeight))
         vp.style.height = playerHeight
       })
+
+      // mv开始播放时,如果有音乐在播放中,就把它暂停
+      const store = useStore()
+      myPlayer.on("play", () => {
+        store.commit("music/updateIsPlaying", { isPlaying: false })
+      })
     }
+
+    return { videoPlayer }
   },
 }
 </script>
 
-<style>
+<style lang="less" scoped>
+.video-player {
+  border-radius: 5px;
+  overflow: hidden;
+}
 .xgplayer-error {
   display: none;
 }

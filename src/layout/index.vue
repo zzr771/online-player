@@ -3,9 +3,16 @@
     <Header></Header>
     <div class="layout-body">
       <SideMenu></SideMenu>
-      <div class="content">
+      <div class="content" id="content">
         <div class="w">
-          <router-view></router-view>
+          <!-- vue3中使路由页面keep-alive的写法 -->
+          <router-view v-slot="{ Component }">
+            <!-- 当多个页面都需要keep-alive时,必须添加key属性.让Vue能识别不同的页面  -->
+            <keep-alive>
+              <component :is="Component" v-if="$route.meta.keepAlive" :key="$route.path" />
+            </keep-alive>
+            <component :is="Component" v-if="!$route.meta.keepAlive" />
+          </router-view>
         </div>
       </div>
     </div>

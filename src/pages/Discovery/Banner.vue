@@ -13,7 +13,7 @@
       <!-- :autoplay="{ delay: 4000, disableOnInteraction: false }" 
        -->
       <swiper-slide v-for="(banner, index) in banners" :key="index" @click="clickSlide(index)">
-        <img :src="banner.imageUrl" alt="" />
+        <img :src="genImgURL(banner.imageUrl, 1000, 400)" alt="" />
       </swiper-slide>
     </swiper>
   </div>
@@ -23,8 +23,10 @@
 import SwiperCore, { Navigation, Pagination, Autoplay } from "swiper"
 import { Swiper, SwiperSlide } from "swiper/vue/swiper-vue"
 import "swiper/swiper-bundle.css"
-import { ref, reactive, nextTick } from "vue"
+import { reactive, nextTick } from "vue"
 import { reqBanners } from "@/api/discovery"
+import { genImgURL } from "@/utils/common"
+
 SwiperCore.use([Navigation, Pagination, Autoplay])
 export default {
   setup() {
@@ -149,7 +151,7 @@ export default {
       }
     }
 
-    return { banners, clickSlide }
+    return { banners, clickSlide, genImgURL }
   },
   components: {
     Swiper,

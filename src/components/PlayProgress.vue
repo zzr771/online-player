@@ -14,11 +14,20 @@ import { useStore } from "vuex"
 export default {
   setup() {
     const store = useStore()
+
+    // 是否由鼠标控制slider 当值为true,表示用户正在拖动slider, currentTime的变化将不能触发slider的移动
+    let sliderControledByMouse = false
     // 本组件核心变量  当前播放到的时刻
     let currentTime = computed(() => store.state.music.currentTime)
-    // 歌的时长, 单位:秒
-    let totalTime = 309
+    watch(currentTime, (newValue) => {
+      if (!sliderControledByMouse) {
+        moveSlider(newValue)
+      }
+    })
+    let currentSong = computed(() => store.state.music.currentSong)
 
+    // 歌的时长, 单位:秒
+    let totalTime = 285
     let playProgress = ref(null)
     let trackLeft = ref(null)
     let slider = ref(null)
@@ -28,20 +37,25 @@ export default {
       // 需求:鼠标按下时不做处理, 左键按下并且移动时让进度条跟着移动,左键松开时重新计算currentTime
       // 鼠标左键在mask内部按下时, 绑定事件回调
       mask.value.onmousedown = () => {
-        document.onmousemove = computeTime
-        // 立即执行一次computeTime,改变slider的位置
-        computeTime()
-        // 鼠标左键抬起时, 解除computeTime的绑定
-        // 因为进度条细长, 用户拖动的时候很容易离开进度条的范围, 所以onmouseup事件得给document绑定
+        // 如果当前没有歌曲处于播放状态,就什么都不做
+        // if (!currentSong.value.id) return
+
+        // 因为进度条细长, 用户拖动的时候很容易离开进度条的范围, 所以事件得给document绑定
+        document.onmousemove = moveSlider
+        sliderControledByMouse = true
+        // 鼠标左键抬起时, 计算时间,改变时间,然后解除事件绑定
         document.onmouseup = () => {
+          updateTime()
           document.onmousemove = null
           document.onmouseup = null
+          sliderControledByMouse = false
         }
       }
     })
 
     const setCurrentTime = inject("setCurrentTime")
-    function computeTime() {
+    function updateTime() {
+      // 根据slider所在位置计算该位置所代表的时间
       const mouseX = window.event.clientX
       const totalWidth = playProgress.value.clientWidth
       const time = (mouseX / totalWidth) * totalTime
@@ -49,12 +63,17 @@ export default {
       setCurrentTime(time)
     }
 
-    watch(currentTime, (newValue) => {
-      moveSlider(newValue)
-    })
-    function moveSlider(time) {
-      const totalWidth = playProgress.value.clientWidth
-      let position = (time / totalTime) * totalWidth
+    function moveSlider() {
+      let position
+      // 如果是由currentTime变化所调用的本函数
+      if (window.event.type === "timeupdate") {
+        const totalWidth = playProgress.value.clientWidth
+        position = (currentTime.value / totalTime) * totalWidth
+      }
+      // 如果是鼠标点击或移动所调用的本函数
+      else {
+        position = window.event.clientX
+      }
       // 红色轨道的长度不用修正
       trackLeft.value.style.width = position + "px"
       // 向左修正半个slider的宽度
@@ -62,7 +81,6 @@ export default {
       position = position - correction
       slider.value.style.left = position + "px"
     }
-
     return { playProgress, trackLeft, slider, mask, currentTime }
   },
 }

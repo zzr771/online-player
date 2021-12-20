@@ -1,30 +1,32 @@
-// 位于"最新mv"页面的, 长方形MV单元
+// 位于"最新mv"页面的, 长方形MV单元. 也是discovery页面的"最新mv"部分的单元
 <template>
   <div class="mv-card" @click="routeGo">
     <div class="img-part">
-      <img src="@/pages/Discovery/images/mvs/1.jpg" alt="" />
+      <img :src="genImgURL(mv.picUrl, 500, 260)" alt="" />
       <div class="play-count">
         <i class="iconfont icon-bofang"></i>
-        2313
+        {{ mv.playCount }}
       </div>
       <PlayIcon :size="45"></PlayIcon>
     </div>
-    <p class="name">Por Amor al Arte (Video Oficial)</p>
-    <p class="author">Sergio Dalma</p>
+    <p class="name">{{ mv.name }}</p>
+    <p class="author">{{ mv.artistName }}</p>
   </div>
 </template>
 
 <script>
 import { useRouter } from "vue-router"
 import PlayIcon from "@/components/PlayIcon"
+import { genImgURL } from "@/utils/common"
 export default {
-  setup() {
+  props: { mv: Object },
+  setup(props) {
     const router = useRouter()
     function routeGo() {
-      router.push({ path: `/mv/777` })
+      router.push({ path: `/mv/${props.mv.id}` })
     }
 
-    return { routeGo }
+    return { routeGo, genImgURL }
   },
   components: { PlayIcon },
 }

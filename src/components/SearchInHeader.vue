@@ -1,6 +1,6 @@
 // 位于顶部header右侧的搜索栏
 <template>
-  <div class="search">
+  <div class="search" ref="searchEle">
     <div class="search-part" @click="showPanelFn">
       <input type="text" placeholder="搜索" />
       <i class="iconfont icon-sousuo"></i>
@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import { ref, watch } from "vue"
+import { ref } from "vue"
 import { useRouter } from "vue-router"
 export default {
   setup() {
@@ -33,13 +33,14 @@ export default {
       document.removeEventListener("click", toggleShowPanel)
       document.addEventListener("click", toggleShowPanel)
     }
+
+    let searchEle = ref(null)
     // 关于此处的做法的注释,见theme.vue
     function toggleShowPanel(event) {
-      let search = document.querySelector(".search")
       let pn = event.target.parentNode
       // 如果点的不是tab,那就是点击到了Panel的空白,就不关闭panel
       while (pn !== document.documentElement) {
-        if (pn === search) {
+        if (pn === searchEle.value) {
           showPanel.value = true
           return
         }
@@ -56,7 +57,7 @@ export default {
       router.push({ path: "/search", query: { keyword: "222" } })
     }
 
-    return { showPanelFn, showPanel, clickTag }
+    return { searchEle, showPanelFn, showPanel, clickTag }
   },
 }
 </script>

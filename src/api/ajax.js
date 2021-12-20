@@ -7,16 +7,25 @@ export default function ajax(url, data = {}, type = "GET") {
   return new Promise((resolve, reject) => {
     let promise
     if (type === "GET") {
+      // 如果请求参数不为空
+      if (!data) {
+      } else {
+      }
       //拼接get请求参数
       let dataStr = ""
       Object.keys(data).forEach((key) => {
         dataStr += key + "=" + data[key] + "&"
       })
-      // 请求参数不为空, 去除最后一个&, 并拼接到url后面
-      if (dataStr !== "") {
+
+      // 如果没有请求参数
+      if (dataStr === "") {
+        url = BASE_URL + url
+      } else {
+        // 去除最后一个&, 并拼接到url后面
         dataStr = dataStr.slice(0, -1)
         url = BASE_URL + url + "?" + dataStr
       }
+
       // 发送请求,并把返回的promise对象保存在变量中
       promise = axios.get(url)
     } else if (type === "POST") {

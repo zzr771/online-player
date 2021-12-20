@@ -4,7 +4,7 @@
     <div>
       <div class="place-holder"></div>
       <div class="sentence" v-for="(lyric, index) in parsedLyric" :key="index" :sindex="index">
-        <p class="text" v-for="(content, index) in lyric.content" :key="index">
+        <p class="text" v-for="(content, index) in lyric.contents" :key="index">
           {{ content }}
         </p>
       </div>
@@ -15,6 +15,7 @@
 
 <script>
 import { ref, watch, nextTick, onMounted, computed } from "vue"
+import { useStore } from "vuex"
 import BScroll from "@better-scroll/core"
 import ScrollBar from "@better-scroll/scroll-bar"
 import MouseWheel from "@better-scroll/mouse-wheel"
@@ -39,6 +40,8 @@ export default {
     },
   },
   setup(props) {
+    let store = useStore()
+    let currentTime = computed(() => store.state.music.currentTime)
     let scroller = ref(null)
     // betterscroll
     let bs
@@ -54,10 +57,9 @@ export default {
         if (!bs) {
           bs = new BScroll(scroller.value, Object.assign({}, defaultOptions, props.options))
           // 修改一下滚动条的样式
-          document.querySelector(".bscroll-indicator").style.setProperty("border", "none")
-          document
-            .querySelector(".bscroll-indicator")
-            .style.setProperty("background", "var(--scrollbar-color)")
+          const bscrollIndicator = document.querySelector(".bscroll-indicator")
+          bscrollIndicator.style.setProperty("border", "none")
+          bscrollIndicator.style.setProperty("background", "var(--scrollbar-color)")
           _initScroller(bs)
         } else {
           bs.refresh()
@@ -84,10 +86,6 @@ export default {
     }
 
     // 根据当前时间找到对应的那句歌词
-    let currentTime = ref(0)
-    // setInterval(() => {
-    //   currentTime.value += 1
-    // }, 500)
     let activeLyricIndex = computed(() => {
       if (!props.parsedLyric.length) return null
       return props.parsedLyric.findIndex((l, index) => {
@@ -102,17 +100,19 @@ export default {
         }
       })
     })
+
+    let lastActiveLyric
     // 监视 active的那句歌词,给对应的div加上.active类
     watch(activeLyricIndex, (newValue) => {
-      // 获取应该active的歌词所在的div
-      const activeLyric = document.querySelector(`.sentence[sindex='${newValue}']`)
-      activeLyric.classList.add("active")
-
-      // 把上一句歌词的active类去掉
-      const lastActiveLyric = document.querySelector(`.sentence[sindex='${newValue - 1}']`)
+      // 把其他歌词的active类去掉
       if (lastActiveLyric) {
         lastActiveLyric.classList.remove("active")
       }
+
+      // 获取应该active的歌词所在的div
+      const activeLyric = document.querySelector(`.sentence[sindex='${newValue}']`)
+      activeLyric.classList.add("active")
+      lastActiveLyric = activeLyric
 
       // 如果自动滚动处于开启状态, 就滚动到active的歌词
       if (autoScroll) {

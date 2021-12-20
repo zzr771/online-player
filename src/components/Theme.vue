@@ -1,6 +1,6 @@
 // 位于header右侧, 加载和切换主题色的组件
 <template>
-  <div class="theme">
+  <div class="theme" ref="themeEle">
     <span class="icon-wrapper" @click="showOptionsFn"><i class="iconfont icon-pifu"></i></span>
     <div class="options" v-show="showOptions">
       <div
@@ -87,14 +87,15 @@ export default {
       document.removeEventListener("click", toggleShowThemeOptions)
       document.addEventListener("click", toggleShowThemeOptions)
     }
+
+    let themeEle = ref(null)
     // 单独拆出一个函数是为了能够使用removeEventListener
     function toggleShowThemeOptions(event) {
-      let theme = document.querySelector(".theme")
       // pn先保存触发点击事件的父节点, 在循环中不断替换为更上一级的父节点
       let pn = event.target.parentNode
       // 循环到 pn等于html为止
       while (pn !== document.documentElement) {
-        if (pn === theme) {
+        if (pn === themeEle.value) {
           showOptions.value = true
           return
         }
@@ -105,7 +106,7 @@ export default {
       // 最后移除回调,防止每次点击页面都执行该回调
       document.removeEventListener("click", toggleShowThemeOptions)
     }
-    return { themes, changeTheme, showOptions, showOptionsFn }
+    return { themeEle, themes, changeTheme, showOptions, showOptionsFn }
   },
 }
 </script>

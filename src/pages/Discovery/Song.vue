@@ -3,15 +3,15 @@
   <div class="new-songs">
     <TitleH2 title="最新音乐"></TitleH2>
     <ul class="songs-wrapper">
-      <li class="song" v-for="(item, index) in 10" :key="index">
-        <p class="left">{{ index }}</p>
+      <li class="song" v-for="(newSong, index) in newSongs" :key="index" @click="clickSong(newSong)">
+        <p class="left">{{ parseInt(index) + 1 }}</p>
         <div class="middle">
-          <img src="./images/songs/1.jpg" alt="" />
+          <img :src="genImgURL(newSong.img, 136, 136)" alt="" />
           <PlayIcon :size="24"></PlayIcon>
         </div>
         <div class="right">
-          <p class="song-name">At Least I Had You</p>
-          <p class="singer">Gentle Bones / 林俊杰</p>
+          <p class="song-name">{{ newSong.name }}</p>
+          <p class="singer">{{ newSong.artistsText }}</p>
         </div>
       </li>
     </ul>
@@ -21,7 +21,51 @@
 <script>
 import TitleH2 from "@/components/TitleH2"
 import PlayIcon from "@/components/PlayIcon"
+import { standardizeSongObj } from "@/utils/business"
+import { genImgURL } from "@/utils/common"
+import { reqNewSongs } from "@/api/discovery"
+import { reactive } from "vue"
+import { useStore } from "vuex"
 export default {
+  setup() {
+    let store = useStore()
+    let newSongs = reactive({})
+    ;(async function getNewSongs() {
+      const songsObj = await reqNewSongs()
+      // 接口api返回的新歌数量不稳定,这里只取前十
+      songsObj.result = songsObj.result.slice(0, 10)
+      const restructuredSongs = restructure(songsObj.result)
+      newSongs = Object.assign(newSongs, restructuredSongs)
+    })()
+    // 调整,精简每一个song的结构
+    function restructure(songs) {
+      return songs.map((song) => {
+        const {
+          id,
+          name,
+          picUrl,
+          song: { album, artists, duration, mvid },
+        } = song
+        return standardizeSongObj({
+          id,
+          name,
+          img: picUrl,
+          artists,
+          duration,
+          albumId: album.id,
+          albumName: album.name,
+          albumImg: album.picUrl,
+          mvId: mvid,
+        })
+      })
+    }
+
+    function clickSong(song) {
+      store.dispatch("music/startSong", song)
+    }
+
+    return { newSongs, clickSong, genImgURL }
+  },
   components: { TitleH2, PlayIcon },
 }
 </script>
@@ -43,6 +87,7 @@ export default {
     height: 20%;
     padding: 8px;
     border-radius: 10px;
+    cursor: pointer;
     &:hover {
       background-color: var(--light-bgcolor);
     }

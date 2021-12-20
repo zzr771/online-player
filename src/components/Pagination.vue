@@ -6,7 +6,7 @@
     </div>
     <div class="number-wrapper">
       <span class="number" :class="{ on: currentPage == 1 }" @click="clickNumer(1)">1</span>
-      <span class="number" @click="clickEllip('left')" v-show="currentPage > 4" id="leftEllip">...</span>
+      <span class="number" @click="clickEllip('left')" v-show="currentPage > 4" ref="leftEllip">...</span>
       <!-- 活动页码部分 -->
       <span
         class="number"
@@ -21,7 +21,7 @@
         class="number"
         @click="clickEllip('right')"
         v-show="currentPage < totalPageNum - 3"
-        id="rightEllip"
+        ref="rightEllip"
         >...</span
       >
       <span class="number" :class="{ on: currentPage == totalPageNum }" @click="clickNumer(totalPageNum)">{{
@@ -104,12 +104,12 @@ export default {
       computePageNums()
     }
 
+    let leftEllip = ref(null)
+    let rightEllip = ref(null)
     // 左右两个省略号, 在hover状态下变换成图标
     onMounted(() => {
-      const leftEllip = document.getElementById("leftEllip")
-      const rightEllip = document.getElementById("rightEllip")
-      handleEllips(leftEllip, "icon-zuozuo-")
-      handleEllips(rightEllip, "icon-youyou-")
+      handleEllips(leftEllip.value, "icon-zuozuo-")
+      handleEllips(rightEllip.value, "icon-youyou-")
     })
     function handleEllips(ele, fontName) {
       ele.onmouseenter = (event) => {
@@ -122,7 +122,7 @@ export default {
       }
     }
 
-    return { variedPageNums, currentPage, clickNumer, clickEllip, clickBtn }
+    return { variedPageNums, currentPage, clickNumer, clickEllip, clickBtn, leftEllip, rightEllip }
   },
 }
 </script>

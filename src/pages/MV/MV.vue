@@ -2,13 +2,12 @@
 <template>
   <div class="mv">
     <div class="left">
-      <h2 class="title">君のせい</h2>
+      <h2 class="title">{{ mvDetail.name }}</h2>
       <div class="player-wrapper">
-        <!-- <VideoPlayer :url="mvPlayInfo.url" :poster="mvDetail.cover" /> -->
-        <VideoPlayer
-          :url="`http://vodkgeyttp8.vod.126.net/cloudmusic/6c2f/core/0606/bc4f816aa1decccc3f89bffcd64e09ea.mp4?wsSecret=0211ae17e5c2045a03a8e8b6b30d503d&wsTime=1637842019`"
-          :poster="`http://p1.music.126.net/jSa4zdcWkbBlvP5H2VfbNw==/109951166535404987.jpg`"
-        />
+        <!-- 这里暂时用v-if限制VideoPlayer必须在mvUrl有值以后才加载,不然VideoPlayer加载故障
+              后面要换成整个页面的Loading效果
+         -->
+        <VideoPlayer :url="mvUrl" :poster="mvDetail.cover" v-if="mvUrl" />
       </div>
       <div class="author-part">
         <img class="avatar" src="./images/avatar.png" />
@@ -33,18 +32,45 @@
 import VideoPlayer from "@/components/VideoPlayer"
 import Comments from "@/components/Comments"
 import MVCardMini from "@/components/MVCardMini"
-import { onBeforeUnmount } from "vue"
+import { reactive, ref, watch, onBeforeUnmount, onUpdated } from "vue"
+import { reqMvDetail, reqMvUrl, reqSimiMvs } from "@/api/mv"
 export default {
   props: {
     MVID: String,
   },
-  setup() {
-    // 更改页面标题为mv标题
-    document.title = "君のせい"
+  setup(props) {
+    let mvDetail = reactive({})
+    let mvUrl = ref()
+    let simiMvs = reactive({})
+    ;(async function () {
+      const [{ data: _mvDetail }, { data: _mvUrl }, { mvs: _simiMvs }] = await Promise.all([
+        reqMvDetail(props.MVID),
+        reqMvUrl(props.MVID),
+        reqSimiMvs(props.MVID),
+      ])
+      mvDetail = Object.assign(mvDetail, _mvDetail)
+      mvUrl.value = _mvUrl.url
+      simiMvs = Object.assign(simiMvs, _simiMvs)
+    })()
+
+    //-------------------------------------修改页面标题--------------------------------
+    watch(mvDetail, () => {
+      document.title = mvDetail.name
+    })
     // 离开页面时把页面标题改回来
     onBeforeUnmount(() => {
       document.title = "online-player"
     })
+
+    onUpdated(() => {
+      window.scrollTo(0, 0)
+    })
+
+    return {
+      mvDetail,
+      mvUrl,
+      simiMvs,
+    }
   },
   components: { VideoPlayer, Comments, MVCardMini },
 }
@@ -54,7 +80,6 @@ export default {
 .mv {
   display: flex;
   max-width: 950px;
-  height: 3000px;
   margin: 0 auto;
   padding-top: 16px;
   .title {
@@ -65,9 +90,7 @@ export default {
   .left {
     flex: 1;
     .player-wrapper {
-      border-radius: 5px;
       margin-bottom: 16px;
-      overflow: hidden;
     }
     .author-part {
       display: flex;
