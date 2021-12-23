@@ -68,6 +68,23 @@ export function parseTime(time) {
   return timeStr
 }
 
+// 播放量如果数字过大,就简写为"xx万"
+export function simplifyPlayCount(playCount) {
+  // 数据未获取到时,playCount是undefined
+  if (!playCount) return
+  // 如果本来就是包含"万"字的string
+  if (typeof playCount === "string" && playCount.indexOf("万") !== -1) {
+    return playCount
+  }
+  playCount = parseInt(playCount)
+  if (playCount < 10000) {
+    return playCount
+  } else {
+    playCount = Number(playCount / 10000).toFixed(1)
+    return playCount + "万"
+  }
+}
+
 // 获得指定尺寸的图片url
 export function genImgURL(url, width, height) {
   if (!height) height = width
