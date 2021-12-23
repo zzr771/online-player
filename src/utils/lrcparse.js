@@ -28,7 +28,9 @@ function parseLyric(lrc) {
 
   lyricArr.forEach((lyric) => {
     // 获取本句歌词的时间
-    const time = lyric.match(timeReg)
+    let time = lyric.match(timeReg)
+    // 有的中文歌词的开头会有一些译者笔名之类的信息,并不包含时间. 这些信息就不展示, 一面干扰效果
+    if (!time) return
     // 获取本句歌词的内容
     const content = lyric.replace(time[0], "")
     // 获得把时间拆分后的结果
