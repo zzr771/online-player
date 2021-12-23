@@ -1,12 +1,19 @@
 // 页码器
 <template>
-  <div class="pagination">
+  <div class="pagination" v-if="totalPageNum > 1">
     <div class="button left" @click="clickBtn('left')">
       <i class="iconfont icon-back"></i>
     </div>
     <div class="number-wrapper">
       <span class="number" :class="{ on: currentPage == 1 }" @click="clickNumer(1)">1</span>
-      <span class="number" @click="clickEllip('left')" v-show="currentPage > 4" ref="leftEllip">...</span>
+      <!-- 左侧省略号 -->
+      <span
+        class="number"
+        @click="clickEllip('left')"
+        v-show="currentPage > 4 && totalPageNum > 7"
+        ref="leftEllip"
+        >...</span
+      >
       <!-- 活动页码部分 -->
       <span
         class="number"
@@ -16,11 +23,11 @@
         @click="clickNumer(num)"
         >{{ num }}</span
       >
-
+      <!-- 右侧省略号 -->
       <span
         class="number"
         @click="clickEllip('right')"
-        v-show="currentPage < totalPageNum - 3"
+        v-show="currentPage < totalPageNum - 3 && totalPageNum > 7"
         ref="rightEllip"
         >...</span
       >
@@ -35,46 +42,64 @@
 </template>
 
 <script>
-import { ref, reactive, onMounted } from "vue"
+import { ref, reactive, watch, onMounted, inject } from "vue"
 export default {
   props: {
     totalPageNum: Number,
   },
   /*
-    需求:
+    功能:
       1. 最左边页码始终为1,最右边页码始终为最后一页
       2. 活动的页码共有5个, 当前页码始终位于5个活动页码的第三个
           除非: 当前页码小于等于 1+3 或大于等于 最后页码-3
       3. 左省略号出现的条件: 当前页码大于 1+3
          右省略号出现的条件: 当前页码小于 最后页码-3
+      4. 如果页码总数小于8, 那么就没有活动页码,所有的页码都是固定的
+          也没有左右的省略号
   */
   setup(props) {
     // 当前页的页码
     let currentPage = ref(1)
     let variedPageNums = reactive([2, 3, 4, 5, 6])
 
+    // 根据总页码数决定中间几个页码是活动页码还是固定页码
+    function initVariedPageNums() {
+      // 如果页码总数小于8,那中间的就不是活动页码,需要处理.否则不需要处理
+      if (props.totalPageNum < 8) {
+        // 左右两端的页码总是不变. 中间的页码的数量需要变化
+        const pageNums = props.totalPageNum - 2
+        // 重写variedPageNums数组
+        variedPageNums.splice(0, 5)
+        for (let i = 0; i < pageNums; i++) {
+          variedPageNums.push(i + 2)
+        }
+      }
+    }
+    initVariedPageNums()
+
+    watch(() => props.totalPageNum, initVariedPageNums)
+
     //计算活动页码
     function computePageNums() {
+      // 如果总页码数小于8, 那么中间的页码不变化
+      if (props.totalPageNum < 8) return
       // 如果当前页码小于等于 1+3, 活动页码是2,3,4,5,6
       if (currentPage.value <= 4) {
         variedPageNums.forEach((value, index) => {
           variedPageNums[index] = index + 2
         })
-        // console.log("前", variedPageNums)
       }
-      // 如果当前页码大于等于 最后页码-3, 活动页码是最终页码往前数5
+      // 如果当前页码大于等于 最后页码-3, 活动页码是最终页码往前依次数5
       else if (currentPage.value >= props.totalPageNum - 3) {
         variedPageNums.forEach((value, index) => {
           variedPageNums[index] = props.totalPageNum - (5 - index)
         })
-        // console.log("后", variedPageNums)
       }
       // 其他情况下, 活动页码的中间那个是当前页的页码
       else {
         variedPageNums.forEach((value, index) => {
           variedPageNums[index] = currentPage.value - 2 + index
         })
-        // console.log("中", variedPageNums)
       }
     }
     // 页码被点击后, 改变currentPage, 然后重新计算活动页码
@@ -108,8 +133,10 @@ export default {
     let rightEllip = ref(null)
     // 左右两个省略号, 在hover状态下变换成图标
     onMounted(() => {
-      handleEllips(leftEllip.value, "icon-zuozuo-")
-      handleEllips(rightEllip.value, "icon-youyou-")
+      if (leftEllip.value && rightEllip.value) {
+        handleEllips(leftEllip.value, "icon-zuozuo-")
+        handleEllips(rightEllip.value, "icon-youyou-")
+      }
     })
     function handleEllips(ele, fontName) {
       ele.onmouseenter = (event) => {
@@ -122,7 +149,21 @@ export default {
       }
     }
 
-    return { variedPageNums, currentPage, clickNumer, clickEllip, clickBtn, leftEllip, rightEllip }
+    // 页码变化时,更新父组件中的页码数据
+    const updateCurrentPage = inject("updateCurrentPage")
+    watch(currentPage, (newValue) => {
+      updateCurrentPage(newValue)
+    })
+
+    return {
+      variedPageNums,
+      currentPage,
+      clickNumer,
+      clickEllip,
+      clickBtn,
+      leftEllip,
+      rightEllip,
+    }
   },
 }
 </script>

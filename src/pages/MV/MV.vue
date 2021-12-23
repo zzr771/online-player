@@ -7,22 +7,22 @@
         <!-- 这里暂时用v-if限制VideoPlayer必须在mvUrl有值以后才加载,不然VideoPlayer加载故障
               后面要换成整个页面的Loading效果
          -->
-        <VideoPlayer :url="mvUrl" :poster="mvDetail.cover" v-if="mvUrl" />
+        <VideoPlayer :url="mvUrl" :poster="genImgURL(mvDetail.cover, 1200, 750)" v-if="mvUrl" />
       </div>
       <div class="author-part">
-        <img class="avatar" src="./images/avatar.png" />
-        <p class="author">the peggies</p>
+        <img class="avatar" :src="genImgURL(artist.picUrl, 120)" />
+        <p class="author">{{ artist.name }}</p>
       </div>
       <div class="info">
-        <span class="date">发布：2015-07-01</span>
-        <span class="count">播放：456077次</span>
+        <span class="date">发布：{{ mvDetail.publishTime }}</span>
+        <span class="count">播放：{{ simplifyPlayCount(mvDetail.playCount) }}次</span>
       </div>
-      <Comments></Comments>
+      <Comments :id="MVID" type="mv"></Comments>
     </div>
     <div class="right">
-      <h2 class="title">相关推荐</h2>
+      <h2 class="title simi">相关推荐</h2>
       <div class="recommend-mv-list">
-        <MVCardMini v-for="(item, index) in 4" :key="index"></MVCardMini>
+        <MVCardMini v-for="(simiMv, index) in simiMvs" :key="index" :mv="simiMv"></MVCardMini>
       </div>
     </div>
   </div>
@@ -32,8 +32,10 @@
 import VideoPlayer from "@/components/VideoPlayer"
 import Comments from "@/components/Comments"
 import MVCardMini from "@/components/MVCardMini"
-import { reactive, ref, watch, onBeforeUnmount, onUpdated } from "vue"
+import { reactive, ref, watch, onBeforeUnmount } from "vue"
 import { reqMvDetail, reqMvUrl, reqSimiMvs } from "@/api/mv"
+import { reqArtist } from "@/api/music"
+import { genImgURL, simplifyPlayCount } from "@/utils/common"
 export default {
   props: {
     MVID: String,
@@ -42,16 +44,28 @@ export default {
     let mvDetail = reactive({})
     let mvUrl = ref()
     let simiMvs = reactive({})
-    ;(async function () {
+    let artist = reactive({})
+
+    // 请求页面中所需的所有数据
+    async function getData() {
       const [{ data: _mvDetail }, { data: _mvUrl }, { mvs: _simiMvs }] = await Promise.all([
         reqMvDetail(props.MVID),
         reqMvUrl(props.MVID),
         reqSimiMvs(props.MVID),
       ])
+      const _artist = await reqArtist(_mvDetail.artistId)
+
       mvDetail = Object.assign(mvDetail, _mvDetail)
       mvUrl.value = _mvUrl.url
       simiMvs = Object.assign(simiMvs, _simiMvs)
-    })()
+      artist = Object.assign(artist, _artist.artist)
+
+      // console.log(mvUrl.value)
+    }
+    getData()
+
+    // id变化时,重新请求数据
+    watch(() => props.MVID, getData)
 
     //-------------------------------------修改页面标题--------------------------------
     watch(mvDetail, () => {
@@ -62,14 +76,14 @@ export default {
       document.title = "online-player"
     })
 
-    onUpdated(() => {
-      window.scrollTo(0, 0)
-    })
-
     return {
       mvDetail,
       mvUrl,
       simiMvs,
+      artist,
+
+      genImgURL,
+      simplifyPlayCount,
     }
   },
   components: { VideoPlayer, Comments, MVCardMini },
@@ -83,9 +97,13 @@ export default {
   margin: 0 auto;
   padding-top: 16px;
   .title {
+    margin-left: 8px;
     margin-bottom: 16px;
     font-size: @font-size-lg;
     font-weight: bolf;
+    &.simi {
+      font-weight: normal;
+    }
   }
   .left {
     flex: 1;
@@ -110,6 +128,7 @@ export default {
     .info {
       margin-bottom: 48px;
       span {
+        margin-right: 20px;
         font-size: @font-size-sm;
         color: var(--font-color-grey-shallow);
       }
@@ -117,7 +136,7 @@ export default {
   }
   .right {
     width: 36%;
-    padding-left: 32px;
+    padding-left: 24px;
   }
 }
 </style>

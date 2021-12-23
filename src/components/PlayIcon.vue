@@ -48,6 +48,7 @@ export default {
     background-color: @font-color-transparent;
     transition: 0.3s;
     opacity: 0;
+    cursor: pointer;
     i {
       color: @theme-color;
     }

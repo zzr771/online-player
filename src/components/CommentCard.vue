@@ -1,18 +1,18 @@
 // 用户评论的最小单元
 <template>
   <div class="comment-card" :class="{ 'bottom-border': bottomBorder }">
-    <img :src="comment.avatar" class="avatar" />
+    <img :src="genImgURL(comment.user.avatarUrl, 80)" class="avatar" />
     <div class="right-part">
       <div class="content">
-        <span class="username">{{ comment.username }}: </span>
+        <span class="username">{{ comment.user.nickname }}: </span>
         <span class="comment">{{ comment.content }}</span>
       </div>
-      <div class="quote-reply" v-if="comment.quoteReply.username">
-        <span class="username">{{ comment.quoteReply.username }}: </span>
-        <span class="comment">{{ comment.quoteReply.content }}</span>
+      <div class="quote-reply" v-if="comment.beReplied.length">
+        <span class="username">{{ comment.beReplied[0].user.nickname }}: </span>
+        <span class="comment">{{ comment.beReplied[0].content }}</span>
       </div>
       <div class="time-likes">
-        <span class="time">{{ comment.time }}</span>
+        <span class="time">{{ comment.timeStr }}</span>
         <span class="likes" @click="clickLike">
           <i class="iconfont icon-dianzan" ref="likeIcon"></i> {{ likesCountTemp }}
         </span>
@@ -23,21 +23,22 @@
 
 <script>
 import { ref } from "vue"
+import { genImgURL } from "@/utils/common"
 export default {
   props: {
     comment: Object,
     bottomBorder: Boolean,
   },
   setup(props) {
+    let likesCountTemp = ref(0)
     // 用户点赞后,向服务端发送post请求,但页面不重新加载,因为没有必要
     // 把用户点赞的评论的点赞数+1显示即可,同时改变点赞数图标的颜色
-    let likesCountTemp = ref(props.comment.likesCount)
+    likesCountTemp.value = props.comment.likedCount
     // 标记用户是否已经点赞, 如果没有,点赞+1;如果点了,就取消点赞,赞数恢复
     let hasClickedLike = false
     // 用以绑定点赞部分
     let likeIcon = ref(null)
     function clickLike() {
-      // debugger
       // 如果没点过赞
       if (!hasClickedLike) {
         //post请求...
@@ -45,12 +46,12 @@ export default {
       }
       // 如果点过赞
       else {
-        likesCountTemp.value = props.comment.likesCount
+        likesCountTemp.value = props.comment.likedCount
       }
       hasClickedLike = !hasClickedLike
       likeIcon.value.classList.toggle("has-been-clicked")
     }
-    return { likesCountTemp, clickLike, likeIcon }
+    return { genImgURL, likesCountTemp, clickLike, likeIcon }
   },
 }
 </script>

@@ -1,22 +1,29 @@
 // 位于MV播放页面右侧的, 长方形小MV单元
 <template>
-  <div class="mv-card-mini">
+  <div class="mv-card-mini" @click="$router.push(`/mv/${mv.id}`)">
     <div class="img-part">
-      <img src="@/pages/MV/images/MVmini/1.jpg" alt="" />
+      <img :src="genImgURL(mv.cover, 280, 160)" alt="" />
       <PlayIcon :size="36"></PlayIcon>
-      <div class="play-count"><i class="iconfont icon-bofang"></i> 2435</div>
-      <div class="duration">05:19</div>
+      <div class="play-count"><i class="iconfont icon-bofang"></i> {{ simplifyPlayCount(mv.playCount) }}</div>
+      <div class="duration">{{ parseTime(mv.duration / 1000) }}</div>
     </div>
     <div class="content">
-      <div class="name">現状ディストラクション</div>
-      <div class="desc">by SPYAIR</div>
+      <div class="name">{{ mv.name }}</div>
+      <div class="desc">{{ mv.artistName }}</div>
     </div>
   </div>
 </template>
 
 <script>
 import PlayIcon from "@/components/PlayIcon"
+import { genImgURL, parseTime, simplifyPlayCount } from "@/utils/common"
 export default {
+  props: {
+    mv: Object,
+  },
+  setup() {
+    return { genImgURL, parseTime, simplifyPlayCount }
+  },
   components: { PlayIcon },
 }
 </script>
@@ -24,8 +31,9 @@ export default {
 <style lang="less" scoped>
 .mv-card-mini {
   display: flex;
-  padding: 8px 0;
+  padding: 8px 0 8px 8px;
   border-radius: 4px;
+  cursor: pointer;
   &:hover {
     background-color: var(--light-bgcolor);
   }
@@ -59,6 +67,7 @@ export default {
     display: flex;
     flex-direction: column;
     justify-content: space-around;
+    overflow: hidden;
     .name,
     .desc {
       white-space: nowrap;

@@ -1,95 +1,111 @@
 // 用户评论区, 包含"精彩评论"和"最新评论"两个分区
 <template>
-  <div class="comments">
-    <div class="hot-comments" v-if="comments.hotComments">
+  <div class="comments" ref="commentsWrapper">
+    <div class="hot-comments" v-if="hotCommentsNum && currentPage === 1">
       <p class="title">精彩评论</p>
       <CommentCard
-        v-for="(hotComment, index) in comments.hotComments"
+        v-for="(hotComment, index) in hotComments"
         :comment="hotComment"
-        :bottomBorder="index !== comments.hotComments.length - 1"
+        :bottomBorder="index !== Object.keys(hotComments).length - 1"
         :key="index"
       ></CommentCard>
     </div>
     <div class="new-comments">
-      <p class="title">最新评论 ({{ totalCommentNum }})</p>
+      <p class="title">最新评论 ({{ total }})</p>
       <CommentCard
-        v-for="(newComment, index) in comments.newComments"
+        v-for="(newComment, index) in comments"
         :comment="newComment"
-        :bottomBorder="index !== comments.newComments.length - 1"
+        :bottomBorder="index !== Object.keys(comments).length - 1"
         :key="index"
       ></CommentCard>
     </div>
-    <Pagination :totalPageNum="26"></Pagination>
+    <Pagination :totalPageNum="totalPageNum"></Pagination>
   </div>
 </template>
 
 <script>
 import CommentCard from "./CommentCard"
 import Pagination from "@/components/Pagination"
-import { computed } from "vue"
+import { ref, reactive, provide, watch } from "vue"
+import { reqSongComment, reqPlaylistComment, reqMvComment, reqHotComment } from "@/api/comment"
+
+const PAGE_SIZE = 20
 export default {
-  setup() {
-    const comments = {
-      hotComments: [
-        {
-          username: "EzekielDaun",
-          avatar: require("@/pages/MV/images/comments/1.jpg"),
-          content:
-            "血小板都没能让我氪大会员，这番果断剁了开追[爱心]血小板都没能让我氪大会员，这番果断剁了开追[爱心]血小板都没能让我氪大会员，这番果断剁了开追[爱心]血小板都没能让我氪大会员，这番果断剁了开追[爱心]",
-          time: "2018-10-13 16:48:57",
-          likesCount: 1617,
-          quoteReply: {},
-        },
-        {
-          username: "AzusaHana",
-          avatar: require("@/pages/MV/images/comments/2.jpg"),
-          content: "残念，全部猜错，建议去补原作",
-          time: "2018-10-26 20:22:31",
-          likesCount: 926,
-          quoteReply: {
-            username: "TheLo-Fi",
-            content:
-              "就op给的信息来说，这个作者没胆量不给男主人形，也不打算搞一只母史莱姆当女主，就知道这部番虽然开头有些创意，后期还是传统的打怪收后宫套路。",
-          },
-        },
-        {
-          username: "黎岸丶繁漪",
-          avatar: require("@/pages/MV/images/comments/3.jpg"),
-          content: "遇事不决，量子力学，双叶一下，你就知道！",
-          time: "2019-01-18 19:25:03",
-          likesCount: 352,
-          quoteReply: {},
-        },
-      ],
-      newComments: [
-        {
-          username: "找点啥老弟",
-          avatar: require("@/pages/MV/images/comments/4.jpg"),
-          content: "或许“开头有些创意”是猜对了？毕竟....看过的都懂",
-          time: "2021-10-31 20:03:33",
-          likesCount: 0,
-          quoteReply: {
-            username: "AzusaHana",
-            content: "残念，全部猜错，建议去补原作",
-          },
-        },
-        {
-          username: "十月底的晚秋",
-          avatar: require("@/pages/MV/images/comments/5.jpg"),
-          content: "哈哈哈大G的SG，洋次郎弹会心一击用的那把吉他",
-          time: "2021-10-23 20:16:34",
-          likesCount: 0,
-          quoteReply: {
-            username: "帐号已注销",
-            content: "RADWIMPS...有内味了",
-          },
-        },
-      ],
+  props: {
+    id: {
+      type: [String, Number],
+      required: true,
+    },
+    type: {
+      type: String,
+      required: true,
+      validator(value) {
+        // 这个值必须与下列字符串中的其中一个相匹配
+        return ["song", "playlist", "mv"].includes(value)
+      },
+    },
+  },
+  setup(props) {
+    // 页码器的当前页码
+    let currentPage = ref(1)
+    // 更新页码的函数
+    function updateCurrentPage(page) {
+      currentPage.value = page
     }
-    let totalCommentNum = computed(() => {
-      return comments.hotComments.length + comments.newComments.length
-    })
-    return { comments, totalCommentNum }
+    provide("updateCurrentPage", updateCurrentPage)
+
+    const reqFunctions = {
+      song: reqSongComment,
+      playlist: reqPlaylistComment,
+      mv: reqMvComment,
+    }
+
+    let comments = reactive({}) //普通评论
+    let hotComments = reactive({}) //热评
+    let total = ref(0) //评论总数
+    let hotCommentsNum = ref(0) //热评数量. 用于判断是否展示热评
+    let totalPageNum = ref()
+    async function getComments() {
+      const req = reqFunctions[props.type]
+      const {
+        comments: _comments,
+        hotComments: _hotComments,
+        total: _total,
+      } = await req({
+        id: props.id,
+        pageSize: PAGE_SIZE,
+        offset: (currentPage.value - 1) * PAGE_SIZE,
+      })
+
+      comments = Object.assign(comments, _comments)
+      hotComments = Object.assign(hotComments, _hotComments)
+      total.value = _total
+
+      hotCommentsNum.value = Object.keys(hotComments).length
+      totalPageNum.value = Math.ceil(total.value / 20)
+    }
+    getComments()
+
+    // 监视id, 如果变化,就要重新请求评论
+    watch(
+      () => props.id,
+      (newValue) => {
+        if (newValue) {
+          currentPage.value = 1
+          getComments()
+        }
+      }
+    )
+
+    // 监视currentPage,如果换页,就要请求新一页的评论内容,并且自动滚动到评论区顶端
+    let commentsWrapper = ref(null)
+    async function onPageChange() {
+      await getComments()
+      commentsWrapper.value.scrollIntoView({ behavior: "smooth" })
+    }
+    watch(currentPage, onPageChange)
+
+    return { comments, hotComments, total, currentPage, hotCommentsNum, totalPageNum, commentsWrapper }
   },
   components: {
     CommentCard,

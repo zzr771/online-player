@@ -1,6 +1,6 @@
 // 点击miniPlayer中左侧歌曲图片, 弹出的播放页面. 包含歌词,评论,相关歌曲等
 <template>
-  <div class="play-page" v-if="true" :class="{ hide: !showPlayPage }">
+  <div class="play-page" v-if="currentSong.id" :class="{ hide: !showPlayPage }">
     <div class="content-wrapper">
       <div class="song">
         <div class="rotating-album">
@@ -83,9 +83,10 @@ export default {
     }
 
     const store = useStore()
+    let currentSong = computed(() => store.state.music.currentSong)
     let showPlayPage = computed(() => store.state.music.showPlayPage)
     let isPlaying = computed(() => store.state.music.isPlaying)
-    return { noLyric, parsedLyric, showPlayPage, isPlaying }
+    return { noLyric, parsedLyric, showPlayPage, isPlaying, currentSong }
   },
   components: { Scroller, Comments, SongCardMini },
 }

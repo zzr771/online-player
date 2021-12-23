@@ -6,7 +6,7 @@
 <script>
 import Player from "xgplayer"
 import { toRem } from "@/utils/rem"
-import { ref, onMounted } from "vue"
+import { ref, onMounted, watch } from "vue"
 import { useStore } from "vuex"
 export default {
   props: {
@@ -21,8 +21,7 @@ export default {
     let videoPlayer = ref(null)
     let myPlayer
     function initPlayer() {
-      window.scroll(0, 0)
-      console.log(props.url)
+      // console.log(props.poster)
       if (!props.url) return
       const vp = videoPlayer.value
       myPlayer = new Player({
@@ -47,6 +46,9 @@ export default {
         store.commit("music/updateIsPlaying", { isPlaying: false })
       })
     }
+
+    // 监视url,变化时重新加载播放器
+    watch(() => props.url, initPlayer)
 
     return { videoPlayer }
   },

@@ -5,7 +5,7 @@
       <img :src="genImgURL(mv.picUrl, 500, 260)" alt="" />
       <div class="play-count">
         <i class="iconfont icon-bofang"></i>
-        {{ mv.playCount }}
+        {{ simplifyPlayCount(mv.playCount) }}
       </div>
       <PlayIcon :size="45"></PlayIcon>
     </div>
@@ -17,7 +17,7 @@
 <script>
 import { useRouter } from "vue-router"
 import PlayIcon from "@/components/PlayIcon"
-import { genImgURL } from "@/utils/common"
+import { genImgURL, simplifyPlayCount } from "@/utils/common"
 export default {
   props: { mv: Object },
   setup(props) {
@@ -26,7 +26,7 @@ export default {
       router.push({ path: `/mv/${props.mv.id}` })
     }
 
-    return { routeGo, genImgURL }
+    return { routeGo, genImgURL, simplifyPlayCount }
   },
   components: { PlayIcon },
 }
