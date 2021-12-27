@@ -87,6 +87,7 @@ export default {
     //----------------------------------处理页面显示的相关代码-------------------------------
     // 点击播放按钮后播放/暂停歌曲
     function clickPlayIcon() {
+      if (!currentSong.value.id) return
       store.commit("music/updateIsPlaying", { isPlaying: !isPlaying.value })
     }
 
