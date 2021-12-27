@@ -1,92 +1,150 @@
 // 点击miniPlayer中左侧歌曲图片, 弹出的播放页面. 包含歌词,评论,相关歌曲等
 <template>
-  <div class="play-page" v-if="currentSong.id" :class="{ hide: !showPlayPage }">
-    <div class="content-wrapper">
-      <div class="song">
-        <div class="rotating-album">
-          <img src="@/assets/images/play-bar-bearing.png" alt="" class="play-bar-bearing" />
-          <img src="@/assets/images/play-bar.png" alt="" class="play-bar" :class="{ playing: isPlaying }" />
-          <div class="img-outer-border">
-            <div class="img-inner-border" :class="{ paused: !isPlaying }">
-              <img src="@/assets/images/album-cover.jpg" alt="" class="album-cover" />
+  <transition name="slide">
+    <div class="play-page" v-if="currentSong.id" v-show="showPlayPage">
+      <div class="content-wrapper">
+        <div class="song">
+          <div class="rotating-album">
+            <img src="@/assets/images/play-bar-bearing.png" alt="" class="play-bar-bearing" />
+            <img src="@/assets/images/play-bar.png" alt="" class="play-bar" :class="{ playing: isPlaying }" />
+            <div class="img-outer-border">
+              <div class="img-inner-border" :class="{ paused: !isPlaying }">
+                <img :src="genImgURL(currentSong.img, 400)" alt="" class="album-cover" />
+              </div>
+            </div>
+          </div>
+          <div class="song-info">
+            <div class="title">{{ currentSong.name }} <span>MV</span></div>
+            <div class="desc">
+              歌手：<span class="author">{{ currentSong.artistsText }}</span>
+            </div>
+            <div class="lyric-wrapper">
+              <Scroller :parsedLyric="parsedLyric"></Scroller>
             </div>
           </div>
         </div>
-        <div class="song-info">
-          <div class="title">Someone Like You <span>MV</span></div>
-          <div class="desc">歌手：<span class="author">Adele</span></div>
-          <div class="lyric-wrapper">
-            <Scroller v-if="parsedLyric.length" :parsedLyric="parsedLyric"></Scroller>
-            <div class="empty" v-else>还没有歌词哦~</div>
+        <div class="others">
+          <div class="comments-wrapper">
+            <Comments :id="currentSong.id" type="song"></Comments>
           </div>
-        </div>
-      </div>
-      <div class="others">
-        <div class="comments-wrapper">
-          <Comments></Comments>
-        </div>
-        <div class="relative">
-          <div class="inclusion-lists">
-            <p class="title">包含这首歌的歌单</p>
-            <div class="list">
-              <SongCardMini>
-                <div class="slot">
-                  <i class="iconfont icon-bofang"></i>
-                  <span class="play-count">187 万</span>
-                </div>
-              </SongCardMini>
-              <SongCardMini>
-                <div class="slot">
-                  <i class="iconfont icon-bofang"></i>
-                  <span class="play-count">187 万</span>
-                </div>
-              </SongCardMini>
+          <div class="relative">
+            <!-- 包含这首歌的歌单 -->
+            <div class="relevant-playLists" v-if="relevantPlayLists.length">
+              <p class="title">包含这首歌的歌单</p>
+              <div class="list">
+                <SongCardMini
+                  v-for="(relevantPlayList, index) in relevantPlayLists"
+                  :key="index"
+                  :data="relevantPlayList"
+                  type="playlist"
+                >
+                  <div class="slot">
+                    <i class="iconfont icon-bofang"></i>
+                    <span class="play-count">{{ simplifyPlayCount(relevantPlayList.playCount) }}</span>
+                  </div>
+                </SongCardMini>
+              </div>
             </div>
-          </div>
-          <div class="similiar-songs">
-            <p class="title">相似歌曲</p>
-            <div class="list">
-              <SongCardMini> Adele </SongCardMini>
-              <SongCardMini> Adele </SongCardMini>
+            <!-- 相似歌曲 -->
+            <div class="similiar-songs" v-if="simiSongs.length">
+              <p class="title">相似歌曲</p>
+              <div class="list">
+                <SongCardMini
+                  v-for="(simiSong, index) in simiSongs"
+                  :key="index"
+                  :data="simiSong"
+                  type="song"
+                >
+                  {{ simiSong.artistsText }}
+                </SongCardMini>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </transition>
 </template>
 
 <script>
-import { reqLyric } from "@/api/music"
-import LyricPaser from "@/utils/lrcparse"
-import { ref, reactive, computed } from "vue"
+import { reactive, computed, watchEffect } from "vue"
 import { useStore } from "vuex"
 import Scroller from "@/components/Scroller"
 import Comments from "@/components/Comments"
 import SongCardMini from "@/components/SongCardMini"
+import { reqLyric, reqRelevantPlayLists, reqSimiSongs } from "@/api/music"
+import LyricPaser from "@/utils/lrcparse"
+import { genImgURL, simplifyPlayCount } from "@/utils/common"
+import { standardizeSongObj } from "@/utils/business"
 export default {
   setup() {
-    // 解析后的歌词,类型为数组,每个元素都是对象,包含一句歌词的信息(时间,原文歌词,译文歌词). 结构: {time,contents:[lyric,tlyric]}
-    let parsedLyric = reactive([])
-    let noLyric = ref(true)
-
-    getLyric("16435049")
-
-    // 获取歌词
-    async function getLyric(id) {
-      let lrc = await reqLyric(id)
-      //如果歌词存在
-      if (lrc) {
-        // 把LyricPaser解析后的数组赋值给parsedLyric,这里用深拷贝. 否则parsedLyric的内存指针就变了
-        parsedLyric = Object.assign(parsedLyric, LyricPaser(lrc))
-      }
-    }
-
     const store = useStore()
     let currentSong = computed(() => store.state.music.currentSong)
     let showPlayPage = computed(() => store.state.music.showPlayPage)
     let isPlaying = computed(() => store.state.music.isPlaying)
-    return { noLyric, parsedLyric, showPlayPage, isPlaying, currentSong }
+
+    let previousSongId = ""
+    watchEffect(() => {
+      // 打开播放页面的时候才去请求歌词和相关歌曲歌单, 并且如果歌没有变化,就不重新请求
+      if (showPlayPage.value && currentSong.value.id !== previousSongId) {
+        previousSongId = currentSong.value.id
+        getSongData(currentSong.value.id)
+      }
+    })
+
+    // 解析后的歌词,类型为数组,每个元素都是对象,各包含一句歌词的信息(时间,原文歌词,译文歌词). 结构: {time,contents:[lyric,tlyric]}
+    let parsedLyric = reactive([])
+    let relevantPlayLists = reactive([])
+    let simiSongs = reactive([])
+    // 获取歌曲相关数据
+    async function getSongData(id) {
+      let [_lrc, _relevantPlayLists, _simiSongs] = await Promise.all([
+        reqLyric(id),
+        reqRelevantPlayLists(id),
+        reqSimiSongs(id),
+      ])
+      //-----------------------歌词
+      // 先清除上一首歌的歌词
+      parsedLyric.length = 0
+      //如果歌词存在
+      if (_lrc) {
+        // 把LyricPaser解析后的数组赋值给parsedLyric,这里用Object.assign. 能够在不改变parsedLyric的响应式和内存指针的前提下把一个对象的所有属性赋值给它
+        parsedLyric = Object.assign(parsedLyric, LyricPaser(_lrc))
+      }
+      //-----------------------相关歌单
+      relevantPlayLists.length = 0
+      relevantPlayLists = Object.assign(relevantPlayLists, _relevantPlayLists.playlists)
+      //-----------------------相似歌曲
+      // 歌曲对象标准化
+      _simiSongs = _simiSongs.songs.map((s) => {
+        const { id, name, album, duration, mvid } = s
+        return standardizeSongObj({
+          id,
+          name,
+          img: album.picUrl,
+          artists: album.artists,
+          duration,
+          albumId: album.id,
+          albumName: album.name,
+          albumImg: album.picUrl,
+          mvId: mvid,
+        })
+      })
+      simiSongs.length = 0
+      simiSongs = Object.assign(simiSongs, _simiSongs)
+      // console.log(_simiSongs)
+    }
+
+    return {
+      parsedLyric,
+      showPlayPage,
+      isPlaying,
+      currentSong,
+      relevantPlayLists,
+      simiSongs,
+      genImgURL,
+      simplifyPlayCount,
+    }
   },
   components: { Scroller, Comments, SongCardMini },
 }
@@ -98,7 +156,7 @@ export default {
 @img-inner-border-d: 300px;
 .play-page {
   position: absolute;
-  z-index: 100;
+  z-index: 150;
   top: @header-height;
   bottom: @mini-player-height;
   left: 0;
@@ -106,12 +164,7 @@ export default {
   padding: 0 36px;
   overflow-y: auto;
   background: var(--player-bgcolor);
-
   transition: 0.5s;
-
-  &.hide {
-    transform: translateY(100%);
-  }
   .content-wrapper {
     max-width: 870px;
     margin: 0 auto;
@@ -236,7 +289,7 @@ export default {
       .relative {
         width: 28%;
         padding-left: 36px;
-        .inclusion-lists {
+        .relevant-playLists {
           margin-bottom: 36px;
         }
         .title {
