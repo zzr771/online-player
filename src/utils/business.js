@@ -1,4 +1,4 @@
-// 业务处理方法
+// 本文件保存业务处理方法
 export function standardizeSongObj(song) {
   const { id, name, img, artists, duration, albumId, albumName, albumImg, mvId, ...rest } = song
 
@@ -22,7 +22,7 @@ export function standardizeSongObj(song) {
 function genSongPlayUrl(id) {
   return `https://music.163.com/song/media/outer/url?id=${id}.mp3`
 }
-export function genArtistsText(artists) {
+function genArtistsText(artists) {
   const nameArr = (artists || []).map((artist) => artist.name)
   return nameArr.join(" / ")
 }

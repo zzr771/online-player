@@ -9,7 +9,7 @@ export default function LyricPaser(lrc) {
   }
   // 原文为中文, 只有中文歌词需要解析
   else {
-    const chineseLrc = parseLyric(lrc.tlyric.lyric)
+    const chineseLrc = parseLyric(lrc.lrc.lyric)
     return chineseLrc
   }
 }
