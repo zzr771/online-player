@@ -1,21 +1,21 @@
 // 用户评论区, 包含"精彩评论"和"最新评论"两个分区
 <template>
   <div class="comments" ref="commentsWrapper">
-    <div class="hot-comments" v-if="hotCommentsNum && currentPage === 1">
+    <div class="hot-comments" v-if="comments.hotComments.length && currentPage === 1">
       <p class="title">精彩评论</p>
       <CommentCard
-        v-for="(hotComment, index) in hotComments"
+        v-for="(hotComment, index) in comments.hotComments"
         :comment="hotComment"
-        :bottomBorder="index !== Object.keys(hotComments).length - 1"
+        :bottomBorder="index !== comments.hotComments.length - 1"
         :key="index"
       ></CommentCard>
     </div>
     <div class="new-comments">
       <p class="title">最新评论 ({{ total }})</p>
       <CommentCard
-        v-for="(newComment, index) in comments"
+        v-for="(newComment, index) in comments.all"
         :comment="newComment"
-        :bottomBorder="index !== Object.keys(comments).length - 1"
+        :bottomBorder="index !== comments.all.length - 1"
         :key="index"
       ></CommentCard>
     </div>
@@ -40,7 +40,7 @@ export default {
       type: String,
       required: true,
       validator(value) {
-        // 这个值必须与下列字符串中的其中一个相匹配
+        // type的值必须与下列字符串中的其中一个相匹配
         return ["song", "playlist", "mv"].includes(value)
       },
     },
@@ -60,10 +60,8 @@ export default {
       mv: reqMvComment,
     }
 
-    let comments = reactive({}) //普通评论
-    let hotComments = reactive({}) //热评
+    let comments = reactive({ hotComments: [], all: [] }) //评论,包含热门评论和所有评论
     let total = ref(0) //评论总数
-    let hotCommentsNum = ref(0) //热评数量. 用于判断是否展示热评
     let totalPageNum = ref()
     async function getComments() {
       const req = reqFunctions[props.type]
@@ -77,11 +75,9 @@ export default {
         offset: (currentPage.value - 1) * PAGE_SIZE,
       })
 
-      comments = Object.assign(comments, _comments)
-      hotComments = Object.assign(hotComments, _hotComments)
+      comments.all = _comments
+      comments.hotComments = _hotComments
       total.value = _total
-
-      hotCommentsNum.value = Object.keys(hotComments).length
       totalPageNum.value = Math.ceil(total.value / 20)
     }
     getComments()
@@ -105,7 +101,7 @@ export default {
     }
     watch(currentPage, onPageChange)
 
-    return { comments, hotComments, total, currentPage, hotCommentsNum, totalPageNum, commentsWrapper }
+    return { comments, total, currentPage, totalPageNum, commentsWrapper }
   },
   components: {
     CommentCard,

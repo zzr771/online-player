@@ -8,13 +8,14 @@
           {{ content }}
         </p>
       </div>
+      <div class="empty" v-if="!parsedLyric.length">抱歉, 还没有歌词</div>
       <div class="place-holder"></div>
     </div>
   </div>
 </template>
 
 <script>
-import { ref, watch, nextTick, onMounted, computed } from "vue"
+import { ref, watch, watchEffect, nextTick, computed, onBeforeUnmount } from "vue"
 import { useStore } from "vuex"
 import BScroll from "@better-scroll/core"
 import ScrollBar from "@better-scroll/scroll-bar"
@@ -36,21 +37,25 @@ export default {
     parsedLyric: Array,
     options: {
       type: Object,
-      default: () => ({}),
+      default: () => [],
     },
   },
   setup(props) {
     let store = useStore()
     let currentTime = computed(() => store.state.music.currentTime)
     let scroller = ref(null)
-    // betterscroll
+    // betterscroll实例
     let bs
     // 是否自动滚动  如果用户使用了鼠标滚轮,那就等待2秒再继续自动滚动
     let autoScroll = true
 
-    onMounted(createBS)
-    // 监视props.parsedLyric, 每次变化时都刷新betterscroll
-    watch(() => props.parsedLyric, createBS)
+    // 监视props.parsedLyric, 歌词变化时视情况创建或者刷新betterscroll
+    watchEffect(() => {
+      if (props.parsedLyric.length) {
+        createBS()
+      }
+    })
+
     function createBS() {
       nextTick(() => {
         // 页面第一次加载
@@ -85,14 +90,20 @@ export default {
       scoller.on("mousewheelEnd", onScrollEnd)
     }
 
-    // 根据当前时间找到对应的那句歌词
-    let activeLyricIndex = computed(() => {
-      if (!props.parsedLyric.length) return null
-      return props.parsedLyric.findIndex((l, index) => {
+    // 监视currentTime, 根据当前时间找到对应的那句歌词
+    let activeLyricIndex = ref(null)
+    let showPlayPage = computed(() => store.state.music.showPlayPage)
+    watch(currentTime, (newValue) => {
+      // currentTime变化时,歌词可能还没下载好,bs可能还没创建
+      if (!props.parsedLyric.length || !bs || !showPlayPage.value) {
+        activeLyricIndex.value = null
+        return
+      }
+      activeLyricIndex.value = props.parsedLyric.findIndex((l, index) => {
         const nextLyric = props.parsedLyric[index + 1]
         // 如果有下一句歌词
         if (nextLyric) {
-          return l.time <= currentTime.value && nextLyric.time > currentTime.value
+          return l.time <= newValue && nextLyric.time > newValue
         }
         // 如果没有下一句歌词,那么当前歌词为最后一句
         else {
@@ -104,19 +115,24 @@ export default {
     let lastActiveLyric
     // 监视 active的那句歌词,给对应的div加上.active类
     watch(activeLyricIndex, (newValue) => {
-      // 把其他歌词的active类去掉
+      // 如果切歌,那么activeLyricIndex的值将会变成null
+      if (newValue === null) return
+
+      // 把之前的active歌词的active类去掉
       if (lastActiveLyric) {
         lastActiveLyric.classList.remove("active")
       }
 
       // 获取应该active的歌词所在的div
       const activeLyric = document.querySelector(`.sentence[sindex='${newValue}']`)
-      activeLyric.classList.add("active")
-      lastActiveLyric = activeLyric
+      if (activeLyric) {
+        activeLyric.classList.add("active")
+        lastActiveLyric = activeLyric
 
-      // 如果自动滚动处于开启状态, 就滚动到active的歌词
-      if (autoScroll) {
-        bs.scrollToElement(activeLyric, 200, 0, true)
+        // 如果自动滚动处于开启状态, 就滚动到active的歌词
+        if (autoScroll) {
+          bs.scrollToElement(activeLyric, 200, 0, true)
+        }
       }
     })
 

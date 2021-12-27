@@ -74,6 +74,12 @@ export default {
           variedPageNums.push(i + 2)
         }
       }
+      // 如果总页数大于8,需要给variedPageNums重新赋值[2, 3, 4, 5, 6].
+      // 因为可能上一首歌的评论总页码小于8, 改变了variedPageNums
+      else {
+        variedPageNums.length = 0
+        variedPageNums = Object.assign(variedPageNums, [2, 3, 4, 5, 6])
+      }
     }
     initVariedPageNums()
 

@@ -10,7 +10,7 @@
         </div>
       </div>
       <div class="content">
-        <div class="info" @click="playSong">
+        <div class="info">
           <span class="name">{{ currentSong.name }}</span>
           <span class="split">-</span>
           <span class="author">{{ currentSong.artistsText }}</span>
@@ -32,7 +32,7 @@
         <div class="mini-player-bubble play-mode-bubble" ref="playModeBubble">{{ playModeText }}</div>
       </div>
       <div class="icon-wrapper play-list">
-        <i class="iconfont icon-gedan" ref="playListBtn" @click="clickPlayListIcon"></i>
+        <i class="iconfont icon-gedan" ref="playListBtn" @click.stop="clickPlayListIcon"></i>
         <!-- 现在的功能是点击按钮后弹出,后面必须要改成:歌单更新后弹出该气泡-->
         <div class="mini-player-bubble play-list-bubble" ref="playListBubble">已更新歌单</div>
       </div>
@@ -52,7 +52,13 @@
       <i class="iconfont icon-prev side right"></i>
     </div>
     <PlayProgress></PlayProgress>
-    <audio ref="audio" @canplay="ready" @timeupdate="updateTime" :src="currentSong.url"></audio>
+    <audio
+      ref="audio"
+      @canplay="ready"
+      @timeupdate="updateTime"
+      @ended="playEnd"
+      :src="currentSong.url"
+    ></audio>
 
     <!-- https://music.163.com/song/media/outer/url?id=16435049.mp3
      -->
@@ -73,6 +79,10 @@ export default {
     // 当前的歌曲, 核心变量. 当currentSong变化时,<audio>的src跟着变化,就重新加载
     let currentSong = computed(() => store.state.music.currentSong)
     let currentTime = computed(() => store.state.music.currentTime)
+    let playList = computed(() => store.state.music.playList)
+    // 当前的播放模式  0:顺序播放  1:单曲循环  2:随机播放
+    let playMode = computed(() => store.state.music.playMode)
+    let randomPlaySequence = computed(() => store.state.music.randomPlaySequence)
 
     //----------------------------------处理页面显示的相关代码-------------------------------
     // 点击播放按钮后播放/暂停歌曲
@@ -82,15 +92,13 @@ export default {
 
     // 点击"播放模式"按钮后,气泡内文字循环变化
     const playModeBtn = ref(null)
-    // 当前的播放模式  0:顺序播放  1:单曲循环  2:随机播放
-    let playMode = 0
+
     let playModeText = ref("顺序播放")
     // 点击播放模式后的处理函数: 在三个模式之间循环,并更换提示框内的文字
     function clickPlayModeBtn() {
-      // playMode在0-2之间循环
-      playMode = ++playMode % 3
+      store.commit("music/switchPlayMode")
       // 更换图标
-      switch (playMode) {
+      switch (playMode.value) {
         case 0:
           // 从随机变成顺序
           playModeText.value = "顺序播放"
@@ -116,7 +124,6 @@ export default {
     // 点击"播放列表"按钮后,气泡出现然后自动消失
     let playListBtn = ref(null)
     let playModeBubble = ref(null)
-    let playListBubble = ref(null)
     // 处理一些元素的显示效果
     onMounted(() => {
       // "播放模式"气泡的弹出和隐藏
@@ -135,9 +142,14 @@ export default {
           playModeBubble.value.style.setProperty("display", "none")
         }, 300)
       }
+    })
 
-      // "播放列表"气泡的弹出和隐藏
-      playListBtn.value.onclick = () => {
+    // 播放列表中新增歌曲时, 弹出提示气泡
+    let playListBubble = ref(null)
+    let previousLength = 0
+    watch(playList.value, (newValue) => {
+      // 比较播放列表在变化前后的长度,决定是否弹出气泡
+      if (newValue.length > previousLength) {
         // 弹出
         playListBubble.value.style.setProperty("display", "block")
         setTimeout(() => {
@@ -151,6 +163,7 @@ export default {
           }, 300)
         }, 2000)
       }
+      previousLength = newValue.length
     })
 
     // 点击"播放列表"图标后,显示/隐藏播放列表
@@ -181,8 +194,9 @@ export default {
     // 播放器
     let audio = ref(null)
 
+    // 监视isPlaying,根据它的值去播放/暂停歌曲
     watch(isPlaying, (newValue) => {
-      // 如果正在播放
+      // 如果值变为true,就开始播放
       if (newValue) {
         audio.value.play()
       } else {
@@ -197,6 +211,39 @@ export default {
       audio.value.play()
     }
 
+    // 当歌曲播放完毕, 自动播放下一首歌
+    function playEnd() {
+      // 如果是顺序播放
+      if (playMode.value === 0) {
+        // 如果播放列表只有一首歌, 那就单曲循环
+        if (playList.value.length === 1) {
+          audio.value.play()
+        }
+
+        let currentIndex = playList.value.findIndex((s) => s.id === currentSong.value.id)
+        // 如果当前歌曲是列表最后一首, 那就从头播放
+        if (currentIndex === playList.value.length - 1) {
+          currentIndex = -1
+        }
+        const nextSong = playList.value[currentIndex + 1]
+        store.commit("music/setCurrentSong", { song: nextSong })
+      }
+      // 如果是单曲循环
+      else if (playMode.value === 1) {
+        audio.value.play()
+      }
+      // 如果是随机播放, 那么实际的播放列表是randomPlaySequence
+      else if (playMode.value === 2) {
+        let currentIndex = randomPlaySequence.value.findIndex((s) => s.id === currentSong.value.id)
+        if (currentIndex === playList.value.length - 1) {
+          currentIndex = -1
+        }
+        const nextSong = randomPlaySequence.value[currentIndex + 1]
+        store.commit("music/setCurrentSong", { song: nextSong })
+      }
+    }
+
+    // audio的事件回调 更新vuex中的currentTime
     function updateTime(e) {
       let time = e.target.currentTime
       store.commit("music/updateCurrentTime", { time })
@@ -216,12 +263,6 @@ export default {
     }
     provide("setVolume", setVolume)
 
-    // 临时测试添加的变量和函数
-    let songURL = ref("")
-    function playSong() {
-      songURL.value = require("/static/song/SomeoneLikeYou.mp3")
-    }
-
     return {
       expandShrinkIcon,
       clickPlayIcon,
@@ -238,12 +279,10 @@ export default {
 
       audio,
       ready,
+      playEnd,
       isPlaying,
       updateTime,
       currentSong,
-
-      songURL,
-      playSong,
     }
   },
   components: { VolumeControl, PlayProgress },
