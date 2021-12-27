@@ -59,8 +59,6 @@ export default {
       mvUrl.value = _mvUrl.url
       simiMvs = Object.assign(simiMvs, _simiMvs)
       artist = Object.assign(artist, _artist.artist)
-
-      // console.log(mvUrl.value)
     }
     getData()
 

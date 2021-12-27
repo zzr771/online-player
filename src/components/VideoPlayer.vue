@@ -14,6 +14,7 @@ export default {
     poster: String,
   },
   setup(props) {
+    const store = useStore()
     onMounted(() => {
       initPlayer()
     })
@@ -21,7 +22,6 @@ export default {
     let videoPlayer = ref(null)
     let myPlayer
     function initPlayer() {
-      // console.log(props.poster)
       if (!props.url) return
       const vp = videoPlayer.value
       myPlayer = new Player({
@@ -41,14 +41,24 @@ export default {
       })
 
       // mv开始播放时,如果有音乐在播放中,就把它暂停
-      const store = useStore()
       myPlayer.on("play", () => {
         store.commit("music/updateIsPlaying", { isPlaying: false })
       })
     }
 
     // 监视url,变化时重新加载播放器
-    watch(() => props.url, initPlayer)
+    watch(
+      () => props.url,
+      (newValue) => {
+        // 如果是第一次打开页面
+        if (!myPlayer) {
+          initPlayer()
+        } else {
+          myPlayer.src = newValue
+          myPlayer.reload()
+        }
+      }
+    )
 
     return { videoPlayer }
   },
