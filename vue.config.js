@@ -1,4 +1,4 @@
-// 引入path模块, 创建resolve函数, 然后把@解析为src
+// 引入path模块, 创把@解析为src
 const path = require("path")
 
 module.exports = {
