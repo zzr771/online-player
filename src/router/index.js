@@ -54,8 +54,6 @@ const routes = [
   },
   {
     name: "search",
-    // path: "/search/:keyword",
-    // props: true,
     path: "/search",
     props($route) {
       return { keyword: $route.query.keyword }
@@ -72,6 +70,9 @@ const routes = [
           return { keyword: $route.query.keyword }
         },
         component: () => import("@/pages/Search/routes/Songs"),
+        meta: {
+          keepAlive: true,
+        },
       },
       {
         path: "lists",
@@ -80,6 +81,9 @@ const routes = [
           return { keyword: $route.query.keyword }
         },
         component: () => import("@/pages/Search/routes/Lists"),
+        meta: {
+          keepAlive: true,
+        },
       },
       {
         path: "mvs",
@@ -88,6 +92,9 @@ const routes = [
           return { keyword: $route.query.keyword }
         },
         component: () => import("@/pages/Search/routes/MVs"),
+        meta: {
+          keepAlive: true,
+        },
       },
       {
         path: "",

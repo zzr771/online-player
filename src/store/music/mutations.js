@@ -8,14 +8,17 @@ export default {
     state.currentSong = song
     song.isPlaying = true
   },
+
   // 播放/暂停
   updateIsPlaying(state, { isPlaying }) {
     state.isPlaying = isPlaying
   },
+
   // 改变歌曲播放进度(时间)
   updateCurrentTime(state, { time }) {
     state.currentTime = time
   },
+
   // 显示/隐藏歌曲播放页
   toggleShowPlayPage(state) {
     state.showPlayPage = !state.showPlayPage
@@ -32,6 +35,7 @@ export default {
       genRandomPlaySequence(state)
     }
   },
+
   // 从播放列表中删除指定歌曲
   removeSongFromPlayList(state, { song }) {
     const index = state.playList.findIndex((s) => {
@@ -39,26 +43,52 @@ export default {
     })
     state.playList.splice(index, 1)
   },
+
+  // 向播放列表中添加歌单
+  addListToPlayList(state, { list }) {
+    // 如果播放列表中已经有歌曲
+    if (state.playList.length) {
+      state.playList.push(...list)
+      // 去重
+      state.playList = [...new Set(state.playList)]
+    } else {
+      state.playList.push(...list)
+    }
+
+    // 播放第一首歌. 先检查currentSong是否为空
+    if (state.currentSong.id) {
+      state.currentSong.isPlaying = false
+    }
+    state.currentSong = list[0]
+    state.currentSong.isPlaying = true
+  },
+
   // 清空播放列表  (也清除currentSong)
   clearPlayList(state) {
     state.playList = []
+    state.randomPlaySequence = []
+    state.currentSong.isPlaying = false
     state.currentSong = {}
     state.currentTime = 0
   },
+
   // 向历史记录列表中添加歌曲
   addSongToHistoryPlayList(state, { song }) {
     if (!state.historyPlayList.includes(song)) {
       state.historyPlayList.push(song)
     }
   },
+
   // 清空历史记录
   clearHistoryPlayList(state) {
     state.historyPlayList = []
   },
+
   // 显示/隐藏播放列表
   toggleShowPlayList(state) {
     state.showPlayList = !state.showPlayList
   },
+
   // 切换播放模式  如果切换到了随机模式,就生成随机播放列表
   switchPlayMode(state) {
     state.playMode = ++state.playMode % 3
