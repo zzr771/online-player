@@ -1,8 +1,8 @@
 // 标签组 包含多组不同分类的标签, 被选中的标签以圆角高亮显示
 <template>
   <div class="tabs-round">
-    <div class="tabs-row" v-for="(row, key, index) in tabs" :key="index">
-      <span class="row-name">{{ row.name }}：</span>
+    <div class="tabs-row" v-for="(row, index) in tabs" :key="index">
+      <span class="row-name">{{ row.CName }}：</span>
       <ul class="options">
         <li
           class="option"
@@ -19,12 +19,13 @@
 </template>
 
 <script>
-import { reactive } from "vue"
+import { reactive, watch, inject } from "vue"
 export default {
   setup() {
-    const tabs = reactive({
-      location: {
-        name: "地区",
+    const tabs = reactive([
+      {
+        name: "area",
+        CName: "地区",
         options: [
           { name: "全部", on: true },
           { name: "内地", on: false },
@@ -34,8 +35,9 @@ export default {
           { name: "韩国", on: false },
         ],
       },
-      type: {
-        name: "类型",
+      {
+        name: "type",
+        CName: "类型",
         options: [
           { name: "全部", on: true },
           { name: "官方版", on: false },
@@ -44,22 +46,44 @@ export default {
           { name: "网易出品", on: false },
         ],
       },
-      sort: {
-        name: "排序",
+      {
+        name: "order",
+        CName: "排序",
         options: [
           { name: "上升最快", on: true },
           { name: "最热", on: false },
           { name: "最新", on: false },
         ],
       },
-    })
-    //选项被点击后,把选项所在数组中所有项的on重置为false,被点击的选项on赋值为true
+    ])
+
+    // 选项被点击后,把on赋值为true.
     function clickOption(option, row) {
+      // 如果选项本来就是on,就什么都不做,免得触发watch
+      if (option.on) return
       row.options.forEach((item) => {
         item.on = false
       })
       option.on = true
     }
+
+    // 记录所有为on的tab, 封装为对象, 供父组件使用
+    let updateOnTabs = inject("updateOnTabs")
+    watch(
+      tabs,
+      (newValue) => {
+        let onTabs = {}
+        newValue.forEach((row) => {
+          row.options.forEach((tab) => {
+            if (tab.on) {
+              onTabs[row.name] = tab.name
+            }
+          })
+        })
+        updateOnTabs(onTabs)
+      },
+      { immediate: true }
+    )
 
     return { tabs, clickOption }
   },

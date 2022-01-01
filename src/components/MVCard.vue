@@ -2,7 +2,7 @@
 <template>
   <div class="mv-card" @click="routeGo">
     <div class="img-part">
-      <img :src="genImgURL(mv.picUrl, 500, 260)" alt="" />
+      <img :src="genImgURL(img, 500, 260)" alt="" />
       <div class="play-count">
         <i class="iconfont icon-bofang"></i>
         {{ simplifyPlayCount(mv.playCount) }}
@@ -15,18 +15,24 @@
 </template>
 
 <script>
-import { useRouter } from "vue-router"
 import PlayIcon from "@/components/PlayIcon"
+import { useRouter } from "vue-router"
 import { genImgURL, simplifyPlayCount } from "@/utils/common"
+import { computed } from "vue"
 export default {
   props: { mv: Object },
   setup(props) {
+    let img = computed(() => {
+      if (props.mv.picUrl) return props.mv.picUrl
+      if (props.mv.cover) return props.mv.cover
+    })
+
     const router = useRouter()
     function routeGo() {
       router.push({ path: `/mv/${props.mv.id}` })
     }
 
-    return { routeGo, genImgURL, simplifyPlayCount }
+    return { img, routeGo, genImgURL, simplifyPlayCount }
   },
   components: { PlayIcon },
 }

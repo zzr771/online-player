@@ -14,7 +14,10 @@
             </div>
           </div>
           <div class="song-info">
-            <div class="title">{{ currentSong.name }} <span>MV</span></div>
+            <div class="title">
+              {{ currentSong.name }}
+              <span v-if="currentSong.mvId" @click="clickMV">MV</span>
+            </div>
             <div class="desc">
               歌手：<span class="author">{{ currentSong.artistsText }}</span>
             </div>
@@ -69,6 +72,7 @@
 <script>
 import { reactive, computed, watchEffect } from "vue"
 import { useStore } from "vuex"
+import { useRouter } from "vue-router"
 import Scroller from "@/components/Scroller"
 import Comments from "@/components/Comments"
 import SongCardMini from "@/components/SongCardMini"
@@ -79,6 +83,7 @@ import { standardizeSongObj } from "@/utils/business"
 export default {
   setup() {
     const store = useStore()
+    const router = useRouter()
     let currentSong = computed(() => store.state.music.currentSong)
     let showPlayPage = computed(() => store.state.music.showPlayPage)
     let isPlaying = computed(() => store.state.music.isPlaying)
@@ -135,6 +140,12 @@ export default {
       // console.log(_simiSongs)
     }
 
+    // 点击歌名后面的MV图标后的处理
+    function clickMV() {
+      router.push(`/mv/${currentSong.value.mvId}`)
+      store.commit("music/toggleShowPlayPage")
+    }
+
     return {
       parsedLyric,
       showPlayPage,
@@ -144,6 +155,7 @@ export default {
       simiSongs,
       genImgURL,
       simplifyPlayCount,
+      clickMV,
     }
   },
   components: { Scroller, Comments, SongCardMini },
@@ -317,13 +329,5 @@ export default {
   100% {
     transform: rotate(360deg);
   }
-}
-.scroll-enter-from,
-.scroll-leave-to {
-  transform: translateY(100%);
-}
-.scroll-enter-active,
-.scroll-leave-active {
-  transition: 0.5s;
 }
 </style>

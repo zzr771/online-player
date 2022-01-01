@@ -11,9 +11,26 @@
 <script>
 import ListCard from "@/components/ListCard"
 import Pagination from "@/components/Pagination"
+import { ref, provide, computed, watch } from "vue"
 export default {
   props: {
     keyword: String,
+  },
+  setup(props) {
+    let keyword = computed(() => props.keyword)
+    watch(keyword, (newValue) => {
+      console.log(newValue)
+    })
+
+    let currentPage = ref(1)
+    function updateCurrentPage(page) {
+      currentPage.value = page
+    }
+    provide("updateCurrentPage", updateCurrentPage)
+    // watch(currentPage, () => {
+    //   newMvs.value.scrollIntoView({ behavior: "smooth" })
+    //   getAllMvs(onTabs)
+    // })
   },
   components: { ListCard, Pagination },
 }

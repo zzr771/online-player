@@ -2,8 +2,8 @@
 <template>
   <div class="search" ref="searchEle">
     <div class="search-part" @click="showPanelFn">
-      <input type="text" placeholder="搜索" />
-      <i class="iconfont icon-sousuo"></i>
+      <input type="text" placeholder="搜索" @keydown.enter="openSearch" v-model="keyword" />
+      <i class="iconfont icon-sousuo" @click="openSearch"></i>
     </div>
     <div class="hot-history-pannel" v-show="showPanel">
       <div class="hot">
@@ -14,7 +14,10 @@
         </div>
       </div>
       <div class="history">
-        <h3>搜索历史</h3>
+        <div class="title-wrapper">
+          <h3>搜索历史</h3>
+          <i class="iconfont icon-shanchu"></i>
+        </div>
         <div class="tags">
           <span class="search-tag" @click.stop="clickTag">someone like you</span>
         </div>
@@ -57,7 +60,15 @@ export default {
       router.push({ path: "/search", query: { keyword: "222" } })
     }
 
-    return { searchEle, showPanelFn, showPanel, clickTag }
+    //-------------------------------搜索------------------------------
+    let keyword = ref("")
+    function openSearch() {
+      // 关闭showPanel
+      showPanel.value = false
+      router.push({ path: "/search", query: { keyword: keyword.value } })
+    }
+
+    return { searchEle, showPanelFn, showPanel, clickTag, keyword, openSearch }
   },
 }
 </script>
@@ -88,6 +99,7 @@ export default {
       color: var(--header-input-color);
       font-size: 15px;
       margin-top: 1px;
+      cursor: pointer;
     }
   }
   .hot-history-pannel {
@@ -103,6 +115,14 @@ export default {
     .hot,
     .history {
       padding: 16px 24px;
+      .title-wrapper {
+        display: flex;
+        justify-content: space-between;
+        i {
+          color: var(--font-color-grey);
+          cursor: pointer;
+        }
+      }
       h3 {
         color: var(--font-color-grey);
         margin-bottom: 16px;

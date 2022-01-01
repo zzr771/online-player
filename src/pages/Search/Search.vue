@@ -1,10 +1,10 @@
 // 搜索页面, 一级路由页. 通过页面右上方的搜索框来触发弹出
 <template>
-  <div class="search clearfix">
+  <div class="search clearfix" id="search">
     <div class="header">
       <div class="title">
-        哈利波特
-        <span>找到503个结果</span>
+        {{ keyword }}
+        <span>找到{{ resultsCount }}个结果</span>
       </div>
       <div class="tabs">
         <router-link :to="{ path: '/search/songs', query: { keyword: keyword } }">歌曲</router-link>
@@ -13,22 +13,30 @@
       </div>
     </div>
     <div class="router-view-wrapper">
-      <router-view></router-view>
+      <router-view v-slot="{ Component }">
+        <keep-alive>
+          <component :is="Component" v-if="$route.meta.keepAlive" :key="$route.path" />
+        </keep-alive>
+        <component :is="Component" v-if="!$route.meta.keepAlive" />
+      </router-view>
     </div>
   </div>
 </template>
 
 <script>
+import { ref, provide } from "vue"
 export default {
   props: { keyword: String },
+  setup() {
+    let resultsCount = ref(0)
+    provide("resultsCount", resultsCount)
+    return { resultsCount }
+  },
 }
 </script>
 
 <style lang="less" scoped>
 .header {
-  // position: absolute;
-  // left: 0;
-  // right: 0;
   border-bottom: 1px solid var(--border);
   .title {
     padding: 20px 12px;

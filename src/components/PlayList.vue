@@ -30,7 +30,11 @@
                 {{ song.name }}
               </div>
               <!-- 检查此歌是否有mv,决定是否显示mv图标 -->
-              <i class="iconfont icon-bofangMV"></i>
+              <i
+                class="iconfont icon-bofangMV"
+                v-if="song.mvId"
+                @click.stop="$router.push(`/mv/${song.mvId}`)"
+              ></i>
             </td>
             <td class="author">
               <div class="content-wrapper">
@@ -258,6 +262,8 @@ export default {
         color: var(--font-color-grey2);
       }
       tbody tr {
+        border-bottom: 1px solid transparent;
+
         &:hover {
           background-color: var(--playlist-hover-bgcolor);
           .delete i {
@@ -265,6 +271,7 @@ export default {
           }
         }
         &.playing {
+          border-bottom: 1px solid @theme-color;
           .name {
             color: @theme-color;
           }

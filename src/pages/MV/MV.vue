@@ -33,6 +33,7 @@ import VideoPlayer from "@/components/VideoPlayer"
 import Comments from "@/components/Comments"
 import MVCardMini from "@/components/MVCardMini"
 import { reactive, ref, watch, onBeforeUnmount } from "vue"
+import { useStore } from "vuex"
 import { reqMvDetail, reqMvUrl, reqSimiMvs } from "@/api/mv"
 import { reqArtist } from "@/api/music"
 import { genImgURL, simplifyPlayCount } from "@/utils/common"
@@ -41,6 +42,8 @@ export default {
     MVID: String,
   },
   setup(props) {
+    const store = useStore()
+
     let mvDetail = reactive({})
     let mvUrl = ref()
     let simiMvs = reactive({})
@@ -63,7 +66,13 @@ export default {
     getData()
 
     // id变化时,重新请求数据
-    watch(() => props.MVID, getData)
+    watch(
+      () => props.MVID,
+      () => {
+        getData()
+        store.commit("music/updateIsPlaying", { isPlaying: false })
+      }
+    )
 
     //-------------------------------------修改页面标题--------------------------------
     watch(mvDetail, () => {

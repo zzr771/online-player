@@ -13,20 +13,20 @@
 </template>
 
 <script>
-import { onMounted, inject } from "vue"
+import { inject } from "vue"
 export default {
   setup() {
-    // 加载前把第一个tab(全部)的on属性变为true
+    // tabs中的每个对象必须具有name和on属性
     let tabs = inject("tabs")
-    onMounted(() => {
-      tabs[0].on = true
-    })
-    // 将被点击的tab的on属性变为true,其余tab.on都变为false
+
+    // 将被点击的tab的on属性变为true
+    let previousOnTab = tabs[0]
     function clickHandler(tab) {
-      tabs.forEach((tab) => {
-        tab.on = false
-      })
-      tab.on = true
+      if (previousOnTab !== tab) {
+        tab.on = true
+        previousOnTab.on = false
+        previousOnTab = tab
+      }
     }
     return { clickHandler, tabs }
   },

@@ -20,60 +20,106 @@
           <!-- 序号小于10的话, 前面加0 -->
           <td class="num">
             <i class="iconfont icon-zuidayinliang" v-if="song.isPlaying"></i>
-            <span v-else>{{ index < 11 ? "0" + (index + 1) : index + 1 }}</span>
+            <span v-else>{{ index < 9 ? "0" + (index + 1) : index + 1 }}</span>
           </td>
-          <td class="name">
+          <td class="name tbody">
             <span @click="clickSong(song)">{{ song.name }}</span>
+            <i class="iconfont icon-bofangMV" v-if="song.mvId" @click="$router.push(`/mv/${song.mvId}`)"></i>
           </td>
-          <td>{{ song.author }}</td>
-          <td>{{ song.album }}</td>
-          <td>{{ song.duration }}</td>
+          <td>{{ song.artistsText }}</td>
+          <td>{{ song.albumName }}</td>
+          <td>{{ parseTime(song.durationSecond) }}</td>
         </tr>
       </tbody>
     </table>
-    <Pagination :totalPageNum="10"></Pagination>
+    <Pagination :totalPageNum="totalPage" ref="pagination"></Pagination>
   </div>
 </template>
 
 <script>
 import Pagination from "@/components/Pagination"
-import { reactive } from "vue"
+import { ref, reactive, provide, computed, watch, inject } from "vue"
+import { useStore } from "vuex"
+import { reqSearch } from "@/api/search"
+import { reqSongDetail } from "@/api/music"
+import { standardizeSongObj } from "@/utils/business"
+import { parseTime } from "@/utils/common"
+
+const LIMIT = 30 //api有问题,limit为30,只返回29个结果;limit为31,返回31个
 export default {
   props: {
     keyword: String,
   },
-  setup() {
-    const songs = reactive([
-      {
-        name: `Hedwig's Theme (From "Harry Potter and the Philosopher's Stone")`,
-        author: `Christoph Eschenbach/Wiener Philharmoniker`,
-        album: `Sommernachtskonzert 2017 (Summer Night Concert 2017) [Live]`,
-        duration: `05:25`,
-        desc: ``,
-      },
-      {
-        name: `Hedwig's Theme`,
-        author: `The City of Prague Philharmonic Orchestra`,
-        album: `Music from the Harry Potter Films`,
-        duration: `04:51`,
-        desc: `海德薇变奏曲`,
-      },
-      {
-        name: `Hedwig's Theme`,
-        author: `John Williams`,
-        album: `Harry Potter and the Philosopher's Stone`,
-        duration: `05:09`,
-        desc: ``,
-      },
-    ])
-
-    function clickSong(song) {
-      songs.forEach((song) => {
-        song.isPlaying = false
-      })
-      song.isPlaying = true
+  setup(props) {
+    let currentPage = ref(1)
+    let pagination = ref(null)
+    function updateCurrentPage(page) {
+      currentPage.value = page
     }
-    return { songs, clickSong }
+    provide("updateCurrentPage", updateCurrentPage)
+    watch(currentPage, () => {
+      document.getElementById("search").scrollIntoView({ behavior: "smooth" })
+      getSongs(props.keyword)
+    })
+
+    // props.keyword是String类型,不具有响应式,不能watch,所以用计算属性代理一下
+    let keyword = computed(() => props.keyword)
+    watch(keyword, (newValue) => {
+      getSongs(newValue)
+      pagination.value.reset()
+    })
+
+    let songs = reactive([])
+    let totalPage = ref(1)
+    let resultsCount = inject("resultsCount")
+    async function getSongs(keyword) {
+      let params = {
+        keywords: keyword,
+        limit: LIMIT + 1,
+        offset: LIMIT * (currentPage.value - 1),
+        type: 1,
+      }
+      let _songs = await reqSearch(params)
+
+      _songs = _songs.result
+      resultsCount.value = _songs.songCount
+      totalPage.value = Math.ceil(_songs.songCount / LIMIT)
+
+      // 返回的搜索结果可能大于30个,多余的截去
+      _songs = _songs.songs.slice(0, LIMIT)
+      _songs = _songs.map((s) => {
+        const { id, name, artists, duration, album, mvid } = s
+        return standardizeSongObj({
+          id,
+          name,
+          img: album.picUrl,
+          artists,
+          duration,
+          albumId: album.id,
+          albumName: album.name,
+          albumImg: album.picUrl,
+          mvId: mvid,
+        })
+      })
+      songs.length = 0
+      songs = Object.assign(songs, _songs)
+    }
+    // 页面第一次打开,自动发送请求
+    if (props.keyword.length) {
+      getSongs(props.keyword)
+    }
+
+    // 点击歌曲后,根据歌曲id去请求完整信息(因为搜索结果返回的歌曲信息不全,没有图片地址,而playPage中需要显示图片)
+    const store = useStore()
+    async function clickSong(song) {
+      const result = await reqSongDetail(song.id)
+      let img = result.songs[0].al.picUrl
+      song.img = img
+
+      store.dispatch("music/startSong", song)
+    }
+
+    return { songs, totalPage, clickSong, parseTime, pagination }
   },
   components: { Pagination },
 }
@@ -85,27 +131,29 @@ export default {
   margin-bottom: 15px;
   font-size: @font-size-sm;
   text-align: left;
-  line-height: 23px;
+  line-height: 24px;
   border-collapse: collapse;
   border-spacing: 0;
   table-layout: fixed;
   color: #606266;
-  th {
-    font-weight: normal;
-    color: var(--font-color-grey2);
-    &.num {
-      width: 5%;
-    }
-    &.duration {
-      width: 10%;
-    }
-    &.name {
-      width: 35%;
-    }
-
-    &.author,
-    &.album {
-      width: 25%;
+  thead {
+    border-bottom: 1px solid var(--border);
+    th {
+      font-weight: normal;
+      color: var(--font-color-grey2);
+      &.num {
+        width: 5%;
+      }
+      &.name {
+        width: 45%;
+      }
+      &.author,
+      &.album {
+        width: 20%;
+      }
+      &.duration {
+        width: 10%;
+      }
     }
   }
   td,
@@ -121,6 +169,16 @@ export default {
   }
   .name {
     color: var(--font-color-white);
+    &.tbody {
+      color: @blue;
+      i {
+        display: inline-block;
+        margin-left: 8px;
+        margin-top: 1px;
+        color: @theme-color;
+        cursor: pointer;
+      }
+    }
     span {
       cursor: pointer;
     }

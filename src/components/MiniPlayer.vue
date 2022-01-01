@@ -22,7 +22,7 @@
         </div>
       </div>
     </div>
-    <!-- 占位,当<div class="song">被隐藏时,防止<div class="control">蹿到左边来 -->
+    <!-- 占位,防止当<div class="song">被隐藏时,<div class="control">蹿到左边来 -->
     <div v-else></div>
     <!-- 右 -->
     <div class="options">
@@ -45,11 +45,11 @@
     </div>
     <!-- 中 -->
     <div class="control">
-      <i class="iconfont icon-prev side left"></i>
+      <i class="iconfont icon-prev side left" @click="clickPrevBtn"></i>
       <span class="play-icon" @click="clickPlayIcon">
         <i class="iconfont" :class="{ 'icon-bofang': !isPlaying, 'icon-24gf-pause2': isPlaying }"></i>
       </span>
-      <i class="iconfont icon-prev side right"></i>
+      <i class="iconfont icon-prev side right" @click="clickNextBtn"></i>
     </div>
     <PlayProgress></PlayProgress>
     <audio
@@ -59,9 +59,6 @@
       @ended="playEnd"
       :src="currentSong.url"
     ></audio>
-
-    <!-- https://music.163.com/song/media/outer/url?id=16435049.mp3
-     -->
   </div>
 </template>
 
@@ -93,7 +90,6 @@ export default {
 
     // 点击"播放模式"按钮后,气泡内文字循环变化
     const playModeBtn = ref(null)
-
     let playModeText = ref("顺序播放")
     // 点击播放模式后的处理函数: 在三个模式之间循环,并更换提示框内的文字
     function clickPlayModeBtn() {
@@ -212,8 +208,9 @@ export default {
       audio.value.play()
     }
 
-    // 当歌曲播放完毕, 自动播放下一首歌
-    function playEnd() {
+    // 播放下一首或者上一首歌  isNext为true，则下一首；false，上一首
+    function playNextOrPrev(isNext) {
+      const indexChange = isNext ? 1 : -1
       // 如果是顺序播放
       if (playMode.value === 0) {
         // 如果播放列表只有一首歌, 那就单曲循环
@@ -222,11 +219,17 @@ export default {
         }
 
         let currentIndex = playList.value.findIndex((s) => s.id === currentSong.value.id)
-        // 如果当前歌曲是列表最后一首, 那就从头播放
-        if (currentIndex === playList.value.length - 1) {
-          currentIndex = -1
+        // 将要播放的歌的索引
+        let targetIndex = currentIndex + indexChange
+        // 如果索引等于播放列表的长度，说明当前歌曲是最后一首，那就去播放第一首
+        if (targetIndex === playList.value.length) {
+          targetIndex = 0
         }
-        const nextSong = playList.value[currentIndex + 1]
+        // 如果索引为-1，说明当前歌曲是第一首，那就去播放最后一首
+        else if (targetIndex === -1) {
+          targetIndex = playList.value.length - 1
+        }
+        const nextSong = playList.value[targetIndex]
         store.commit("music/setCurrentSong", { song: nextSong })
       }
       // 如果是单曲循环
@@ -235,13 +238,36 @@ export default {
       }
       // 如果是随机播放, 那么实际的播放列表是randomPlaySequence
       else if (playMode.value === 2) {
-        let currentIndex = randomPlaySequence.value.findIndex((s) => s.id === currentSong.value.id)
-        if (currentIndex === playList.value.length - 1) {
-          currentIndex = -1
+        if (playList.value.length === 1) {
+          audio.value.play()
         }
-        const nextSong = randomPlaySequence.value[currentIndex + 1]
+        let currentIndex = randomPlaySequence.value.findIndex((s) => s.id === currentSong.value.id)
+        let targetIndex = currentIndex + indexChange
+        if (targetIndex === randomPlaySequence.value.length) {
+          targetIndex = 0
+        } else if (targetIndex === -1) {
+          targetIndex = randomPlaySequence.value.length - 1
+        }
+        const nextSong = randomPlaySequence.value[targetIndex]
         store.commit("music/setCurrentSong", { song: nextSong })
       }
+    }
+
+    // 当歌曲播放完毕, 自动播放下一首歌
+    function playEnd() {
+      playNextOrPrev(true)
+    }
+
+    // 点击了“下一曲”按钮后的处理函数
+    function clickNextBtn() {
+      if (!playList.value.length) return
+      playNextOrPrev(true)
+    }
+
+    // 点击了“上一曲”按钮后的处理函数
+    function clickPrevBtn() {
+      if (!playList.value.length) return
+      playNextOrPrev(false)
     }
 
     // audio的事件回调 更新vuex中的currentTime
@@ -277,6 +303,8 @@ export default {
       playListBubble,
       parsedTotalTime,
       parsedCurrentTime,
+      clickNextBtn,
+      clickPrevBtn,
 
       audio,
       ready,

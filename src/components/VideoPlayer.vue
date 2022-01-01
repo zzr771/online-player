@@ -27,7 +27,7 @@ export default {
       myPlayer = new Player({
         el: vp,
         url: props.url,
-        poster: props.poster,
+        // poster: props.poster,
         videoInit: true,
         lang: "zh-cn",
         width: "100%",
@@ -38,6 +38,7 @@ export default {
         let playerHeight = vp.style.height
         playerHeight = toRem(parseInt(playerHeight))
         vp.style.height = playerHeight
+        myPlayer.play()
       })
 
       // mv开始播放时,如果有音乐在播放中,就把它暂停
@@ -53,6 +54,7 @@ export default {
         // 如果是第一次打开页面
         if (!myPlayer) {
           initPlayer()
+          myPlayer.play()
         } else {
           myPlayer.src = newValue
           myPlayer.reload()

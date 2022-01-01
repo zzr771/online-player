@@ -48,12 +48,11 @@ export default {
     //   },
     // })
     //#endregion
-    // let swiper = new SwiperCore()
+
     let banners = reactive({})
     ;(async function getBanner() {
       let result = await reqBanners()
       banners = Object.assign(banners, result.banners)
-      // console.log(banners)
       // 等待轮播图生成后执行初始化
       nextTick(() => {
         _initSwiper()

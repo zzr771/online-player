@@ -155,11 +155,17 @@ export default {
       }
     }
 
-    // 页码变化时,更新父组件中的页码数据
+    // 该组件必须从父组件中接受一个函数 页码变化时,调用该函数,更新父组件中的页码数据
     const updateCurrentPage = inject("updateCurrentPage")
     watch(currentPage, (newValue) => {
       updateCurrentPage(newValue)
     })
+
+    // 页码重置  该回调供父组件调用
+    function reset() {
+      currentPage.value = 1
+      console.log("reset")
+    }
 
     return {
       variedPageNums,
@@ -169,6 +175,7 @@ export default {
       clickBtn,
       leftEllip,
       rightEllip,
+      reset,
     }
   },
 }

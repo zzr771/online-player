@@ -27,7 +27,7 @@ export default {
     let currentSong = computed(() => store.state.music.currentSong)
     watch(currentSong, (newValue) => {
       // 如果vuex中手动把currentSong清空,那么slider应该消失在最左边, 但是totalTime此时为undefined. 无法通过数学计算得到slider的位置. 所以要手动移动slider
-      if (newValue.value === undefined) {
+      if (!newValue.id) {
         moveSlider(0)
       }
     })
@@ -69,8 +69,10 @@ export default {
       setCurrentTime(time)
     }
 
+    // 该函数作为回调使用时,参数specialPosition是传递过来的时间;作为dom事件回调使用时,参数specialPosition其实是event
     function moveSlider(specialPosition) {
       let position
+      // debugger
       // 如果是由currentTime变化所调用的本函数
       if (window.event.type === "timeupdate") {
         const totalWidth = playProgress.value.clientWidth
