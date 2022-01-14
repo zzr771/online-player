@@ -5,42 +5,32 @@
       <div class="play-all" @click="playAll"><span v-if="songs.length">播放全部</span></div>
       <TabsBasic></TabsBasic>
     </div>
-    <ul class="songs-wrapper">
-      <li
-        class="song-card"
-        v-for="(song, index) in songs"
-        :key="song.index"
-        :class="{ playing: song.isPlaying }"
-      >
-        <i class="playingIcon iconfont icon-zuidayinliang" v-if="song.isPlaying"></i>
-        <span class="number" v-else>{{ index + 1 }}</span>
-        <div class="img-part" @click="clickSong(song)">
-          <img :src="genImgURL(song.img, 120)" alt="" />
-          <PlayIcon :size="24"></PlayIcon>
-        </div>
-        <div class="name">
-          <span @click="clickSong(song)">{{ song.name }}</span>
-          <i class="iconfont icon-bofangMV" v-if="song.mvId" @click="$router.push(`/mv/${song.mvId}`)"></i>
-        </div>
-        <div class="author">{{ song.artistsText }}</div>
-        <div class="album">{{ song.albumName }}</div>
-        <div class="time">{{ parseTime(song.durationSecond) }}</div>
-      </li>
-    </ul>
+
+    <!-- 歌曲部分 -->
+    <div class="song-tab-title">
+      <div class="place-holder"></div>
+      <div class="name">歌名</div>
+      <div class="author">歌手</div>
+      <div class="album">专辑</div>
+      <div class="time">时长</div>
+    </div>
+    <SongCard v-for="(song, index) in songs" :key="index" :song="song" :index="index"></SongCard>
   </div>
 </template>
 
 <script>
+import SongCard from "@/components/SongCard"
 import TabsBasic from "@/components/TabsBasic"
 import PlayIcon from "@/components/PlayIcon"
 import { reactive, provide, watch } from "vue"
 import { useStore } from "vuex"
 import { reqTopSongs } from "@/api/music"
 import { standardizeSongObj } from "@/utils/business"
-import { genImgURL, parseTime } from "@/utils/common"
 export default {
   setup() {
     const store = useStore()
+    let songs = reactive([])
+
     const tabs = reactive([
       { name: "全部", on: true, type: 0 },
       { name: "华语", on: false, type: 7 },
@@ -49,8 +39,10 @@ export default {
       { name: "韩国", on: false, type: 16 },
     ])
     provide("tabs", tabs)
+    watch(tabs, () => {
+      getTopSongs()
+    })
 
-    let songs = reactive([])
     async function getTopSongs() {
       const tabOn = tabs.find((tab) => {
         return tab.on
@@ -76,30 +68,16 @@ export default {
     }
     getTopSongs()
 
-    let lastIndex = 0
-    watch(tabs, (newValue) => {
-      const onIndex = newValue.findIndex((tab) => {
-        return tab.on
-      })
-      if (onIndex !== lastIndex) {
-        getTopSongs()
-        lastIndex = onIndex
-      }
-    })
-
-    function clickSong(song) {
-      store.dispatch("music/startSong", song)
-    }
-
     function playAll() {
       if (songs.length) {
         store.commit("music/addListToPlayList", { list: songs })
       }
     }
 
-    return { songs, clickSong, playAll, genImgURL, parseTime }
+    return { songs, playAll }
   },
   components: {
+    SongCard,
     TabsBasic,
     PlayIcon,
   },
@@ -124,80 +102,29 @@ export default {
       }
     }
   }
-  .song-card {
+  .song-tab-title {
     display: flex;
-    align-items: center;
-    height: 68px;
-    padding: 4px 0;
-    border-radius: 5px;
-    color: #606266;
     font-size: @font-size-sm;
-    .number {
-      width: 70px;
-      text-align: center;
-      color: var(--font-color-grey-shallow);
-    }
-    .playingIcon {
-      width: 70px;
-      text-align: center;
-      color: @theme-color;
-    }
-    .img-part {
-      position: relative;
-      height: 100%;
-      margin-left: 14px;
-      margin-right: 40px;
-      cursor: pointer;
-      img {
-        height: 100%;
-        border-radius: 5px;
-      }
-    }
-    .name,
-    .author,
-    .album {
-      .text-overflow;
-      padding-right: 20px;
+    color: var(--font-color-grey);
+    padding: 5px 0;
+    margin-bottom: 5px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    .place-holder {
+      width: 180px;
     }
     .name {
-      display: flex;
-      width: 235px;
-      color: var(--font-color-white);
-      span {
-        overflow: hidden;
-        padding: 8px 0;
-        cursor: pointer;
-      }
-      i {
-        margin-left: 10px;
-        font-size: 14px;
-        padding: 8px 0;
-
-        color: @theme-color;
-        cursor: pointer;
-      }
+      width: 30%;
     }
     .author {
-      width: 235px;
+      width: 20%;
     }
     .album {
-      width: 235px;
+      width: 20%;
     }
     .time {
-      min-width: 50px;
-    }
-    &:hover {
-      background-color: var(--playlist-hover-bgcolor);
-    }
-    &.playing .name {
-      color: @theme-color;
+      min-width: 10%;
     }
   }
-}
-
-.text-overflow() {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 </style>
