@@ -448,12 +448,12 @@ export default {
       a {
         text-decoration: none;
         color: var(--font-color);
-        transition: 0.3s;
-        &:hover {
-          color: #c71d23;
-        }
         i {
           font-size: 18px;
+          transition: 0.3s;
+        }
+        &:hover {
+          color: #c71d23;
         }
       }
     }
