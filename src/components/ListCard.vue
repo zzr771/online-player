@@ -1,19 +1,37 @@
 // 位于"推荐歌单"页面中的, 方形歌单单元
 <template>
-  <div class="list-card">
+  <div
+    class="list-card"
+    v-if="playlist"
+    @click="$router.push({ path: '/playlistDetail', query: { id: playlist.id } })"
+  >
     <div class="img-part">
-      <img src="@/pages/Discovery/images/lists/1.jpg" alt="" />
-      <div class="tag">热门推荐</div>
+      <!-- <img :src="genImgURL(imgUrl, 360)" alt="" /> -->
+      <img v-lazy="genImgURL(imgUrl, 360)" alt="" :key="imgUrl" />
+      <div class="tag">播放量: {{ simplifyPlayCount(playlist.playCount) }}</div>
       <div class="play-icon">
         <i class="iconfont icon-bofang"></i>
       </div>
     </div>
-    <p class="list-name">胭脂丹唇奏红叶，铁衣长缨吹鹧鸪</p>
+    <p class="list-name">{{ playlist.name }}</p>
   </div>
 </template>
 
 <script>
-export default {}
+import { genImgURL, simplifyPlayCount } from "@/utils/common"
+import { computed } from "vue"
+export default {
+  props: {
+    playlist: Object,
+  },
+  setup(props) {
+    const imgUrl = computed(() => {
+      if (props.playlist.coverImgUrl) return props.playlist.coverImgUrl
+      if (props.playlist.picUrl) return props.playlist.picUrl
+    })
+    return { imgUrl, genImgURL, simplifyPlayCount }
+  },
+}
 </script>
 
 <style lang="less" scoped>
@@ -22,6 +40,7 @@ export default {}
   font-size: @font-size-sm;
   color: var(--font-color);
   padding: 4px 4px 32px;
+  cursor: pointer;
   .img-part {
     position: relative;
     width: 100%;
