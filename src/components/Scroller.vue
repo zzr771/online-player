@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import { ref, watch, watchEffect, nextTick, computed, onBeforeUnmount } from "vue"
+import { ref, watch, watchEffect, nextTick, computed } from "vue"
 import { useStore } from "vuex"
 import BScroll from "@better-scroll/core"
 import ScrollBar from "@better-scroll/scroll-bar"
