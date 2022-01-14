@@ -1,7 +1,7 @@
 // 用户评论的最小单元
 <template>
   <div class="comment-card" :class="{ 'bottom-border': bottomBorder }">
-    <img :src="genImgURL(comment.user.avatarUrl, 80)" class="avatar" />
+    <img v-lazy="genImgURL(comment.user.avatarUrl, 80)" class="avatar" :key="comment.user.avatarUrl" />
     <div class="right-part">
       <div class="content">
         <span class="username">{{ comment.user.nickname }}: </span>

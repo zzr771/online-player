@@ -9,7 +9,7 @@
             <img src="@/assets/images/play-bar.png" alt="" class="play-bar" :class="{ playing: isPlaying }" />
             <div class="img-outer-border">
               <div class="img-inner-border" :class="{ paused: !isPlaying }">
-                <img :src="genImgURL(currentSong.img, 400)" alt="" class="album-cover" />
+                <img v-lazy="genImgURL(currentSong.img, 400)" class="album-cover" :key="currentSong.img" />
               </div>
             </div>
           </div>

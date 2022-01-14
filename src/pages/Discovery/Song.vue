@@ -6,7 +6,7 @@
       <li class="song" v-for="(newSong, index) in newSongs" :key="index" @click="clickSong(newSong)">
         <p class="left">{{ parseInt(index) + 1 }}</p>
         <div class="middle">
-          <img :src="genImgURL(newSong.img, 136, 136)" alt="" />
+          <img v-lazy="genImgURL(newSong.img, 136, 136)" alt="" :key="newSong.img" />
           <PlayIcon :size="24"></PlayIcon>
         </div>
         <div class="right">
@@ -23,7 +23,7 @@ import TitleH2 from "@/components/TitleH2"
 import PlayIcon from "@/components/PlayIcon"
 import { standardizeSongObj } from "@/utils/business"
 import { genImgURL } from "@/utils/common"
-import { reqNewSongs } from "@/api/discovery"
+import { reqPerSongs } from "@/api/discovery"
 import { reactive } from "vue"
 import { useStore } from "vuex"
 export default {
@@ -31,7 +31,7 @@ export default {
     let store = useStore()
     let newSongs = reactive({})
     ;(async function getNewSongs() {
-      const songsObj = await reqNewSongs()
+      const songsObj = await reqPerSongs()
       // 接口api返回的新歌数量不稳定,这里只取前十
       songsObj.result = songsObj.result.slice(0, 10)
       const restructuredSongs = restructure(songsObj.result)
@@ -113,6 +113,9 @@ export default {
       display: flex;
       flex-direction: column;
       justify-content: space-around;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 }

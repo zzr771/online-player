@@ -1,7 +1,8 @@
+// playPage页面, 位于评论区旁边的"相似歌曲","相关歌单卡片"
 <template>
   <div class="song-card-mini" @click="onCLick">
     <div class="img-part">
-      <img :src="imgUrl" alt="" />
+      <img v-lazy="imgUrl" alt="" :key="imgUrl" />
       <PlayIcon :size="24"></PlayIcon>
     </div>
     <div class="right">
@@ -14,7 +15,7 @@
 </template>
 
 <script>
-import { ref, watch } from "vue"
+import { ref } from "vue"
 import { useStore } from "vuex"
 import PlayIcon from "@/components/PlayIcon"
 import { genImgURL } from "@/utils/common"

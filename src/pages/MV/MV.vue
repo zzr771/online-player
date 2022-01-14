@@ -4,13 +4,13 @@
     <div class="left">
       <h2 class="title">{{ mvDetail.name }}</h2>
       <div class="player-wrapper">
-        <!-- 这里暂时用v-if限制VideoPlayer必须在mvUrl有值以后才加载,不然VideoPlayer加载故障
-              后面要换成整个页面的Loading效果
-         -->
         <VideoPlayer :url="mvUrl" :poster="genImgURL(mvDetail.cover, 1200, 750)" v-if="mvUrl" />
+        <div class="loading-img" v-else>
+          <img src="@/assets/images/lazy-loading.png" alt="" />
+        </div>
       </div>
       <div class="author-part">
-        <img class="avatar" :src="genImgURL(artist.picUrl, 120)" />
+        <img class="avatar" v-lazy="genImgURL(artist.picUrl, 120)" :key="artist.picUrl" />
         <p class="author">{{ artist.name }}</p>
       </div>
       <div class="info">
@@ -124,6 +124,16 @@ export default {
     flex: 1;
     .player-wrapper {
       margin-bottom: 16px;
+      .loading-img {
+        width: 608px;
+        height: 337px;
+        img {
+          width: 100%;
+          height: 100%;
+          background-size: cover;
+          border-radius: 5px;
+        }
+      }
     }
     .author-part {
       display: flex;

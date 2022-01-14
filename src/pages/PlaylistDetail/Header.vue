@@ -1,12 +1,14 @@
 <template>
   <div class="header">
-    <div class="img-wrap">
-      <img :src="genImgURL(playlist.coverImgUrl, 400)" />
-    </div>
+    <img class="playlist-cover" v-lazy="genImgURL(playlist.coverImgUrl, 400)" :key="playlist.coverImgUrl" />
     <div class="content">
       <p class="title">{{ playlist.name }}</p>
       <div class="creator-wrap">
-        <img :src="genImgURL(playlist.creator.avatarUrl, 60)" class="avatar" />
+        <img
+          v-lazy="genImgURL(playlist.creator.avatarUrl, 60)"
+          class="avatar"
+          :key="playlist.creator.avatarUrl"
+        />
         <p class="creator">{{ playlist.creator.nickname }}</p>
         <p class="create-time">{{ new Date(playlist.createTime).toLocaleString().split(" ")[0] }} 创建</p>
       </div>
@@ -72,17 +74,12 @@ export default {
 .header {
   display: flex;
   padding: 36px 36px 12px;
-
-  .img-wrap {
+  .playlist-cover {
     width: 200px;
     height: 200px;
     margin-right: 24px;
-    img {
-      width: 100%;
-      height: 100%;
-    }
+    border-radius: 5px;
   }
-
   .content {
     display: flex;
     flex-direction: column;

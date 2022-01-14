@@ -6,7 +6,6 @@
     @click="$router.push({ path: '/playlistDetail', query: { id: playlist.id } })"
   >
     <div class="img-part">
-      <!-- <img :src="genImgURL(imgUrl, 360)" alt="" /> -->
       <img v-lazy="genImgURL(imgUrl, 360)" alt="" :key="imgUrl" />
       <div class="tag">播放量: {{ simplifyPlayCount(playlist.playCount) }}</div>
       <div class="play-icon">

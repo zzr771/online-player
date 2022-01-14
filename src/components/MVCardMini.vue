@@ -2,7 +2,7 @@
 <template>
   <div class="mv-card-mini" @click="$router.push(`/mv/${mv.id}`)">
     <div class="img-part">
-      <img :src="genImgURL(mv.cover, 280, 160)" alt="" />
+      <img v-lazy="genImgURL(mv.cover, 280, 160)" alt="" :key="mv.cover" />
       <PlayIcon :size="36"></PlayIcon>
       <div class="play-count"><i class="iconfont icon-bofang"></i> {{ simplifyPlayCount(mv.playCount) }}</div>
       <div class="duration">{{ parseTime(mv.duration / 1000) }}</div>
