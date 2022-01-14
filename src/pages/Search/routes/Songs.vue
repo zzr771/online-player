@@ -32,94 +32,88 @@
         </tr>
       </tbody>
     </table>
-    <Pagination :totalPageNum="totalPage" ref="pagination"></Pagination>
+    <Pagination :totalPageNum="totalPage"></Pagination>
   </div>
 </template>
 
 <script>
 import Pagination from "@/components/Pagination"
-import { ref, reactive, provide, computed, watch, inject } from "vue"
+import { ref, reactive, provide, watch, inject } from "vue"
 import { useStore } from "vuex"
-import { reqSearch } from "@/api/search"
 import { reqSongDetail } from "@/api/music"
 import { standardizeSongObj } from "@/utils/business"
 import { parseTime } from "@/utils/common"
 
-const LIMIT = 30 //api有问题,limit为30,只返回29个结果;limit为31,返回31个
+const LIMIT = 30
 export default {
-  props: {
-    keyword: String,
-  },
-  setup(props) {
-    let currentPage = ref(1)
-    let pagination = ref(null)
-    function updateCurrentPage(page) {
-      currentPage.value = page
-    }
-    provide("updateCurrentPage", updateCurrentPage)
-    watch(currentPage, () => {
-      document.getElementById("search").scrollIntoView({ behavior: "smooth" })
-      getSongs(props.keyword)
-    })
-
-    // props.keyword是String类型,不具有响应式,不能watch,所以用计算属性代理一下
-    let keyword = computed(() => props.keyword)
-    watch(keyword, (newValue) => {
-      getSongs(newValue)
-      pagination.value.reset()
-    })
+  setup() {
+    let data = inject("data")
 
     let songs = reactive([])
     let totalPage = ref(1)
-    let resultsCount = inject("resultsCount")
-    async function getSongs(keyword) {
-      let params = {
-        keywords: keyword,
-        limit: LIMIT + 1,
-        offset: LIMIT * (currentPage.value - 1),
-        type: 1,
-      }
-      let _songs = await reqSearch(params)
+    // 当前页码, 传递给Pagination组件
+    let currentPage = ref(1)
+    provide("currentPage", currentPage)
 
-      _songs = _songs.result
-      resultsCount.value = _songs.songCount
-      totalPage.value = Math.ceil(_songs.songCount / LIMIT)
+    // 监视data["search-songs"],即搜索到的歌曲
+    watch(
+      () => data["search-songs"],
+      (newValue) => {
+        // 如果还没有数据或者请求错误
+        if (!newValue.result.songs || newValue.code !== 200) return
 
-      // 返回的搜索结果可能大于30个,多余的截去
-      _songs = _songs.songs.slice(0, LIMIT)
-      _songs = _songs.map((s) => {
-        const { id, name, artists, duration, album, mvid } = s
-        return standardizeSongObj({
-          id,
-          name,
-          img: album.picUrl,
-          artists,
-          duration,
-          albumId: album.id,
-          albumName: album.name,
-          albumImg: album.picUrl,
-          mvId: mvid,
+        let result = newValue.result
+
+        // 处理页码
+        totalPage.value = Math.ceil(result.songCount / LIMIT)
+
+        // 处理歌曲信息
+        let _songs = result.songs.slice(0, 30).map((s) => {
+          const { id, name, artists, duration, album, mvid } = s
+          return standardizeSongObj({
+            id,
+            name,
+            img: album.picUrl,
+            artists,
+            duration,
+            albumId: album.id,
+            albumName: album.name,
+            albumImg: album.picUrl,
+            mvId: mvid,
+          })
         })
-      })
-      songs.length = 0
-      songs = Object.assign(songs, _songs)
-    }
-    // 页面第一次打开,自动发送请求
-    if (props.keyword.length) {
-      getSongs(props.keyword)
-    }
+        songs.length = 0
+        songs = Object.assign(songs, _songs)
+      }
+    )
+
+    // 监视搜索关键词,如果变化了,就把currentPage重置为1
+    watch(
+      () => data.keyword,
+      (newValue, oldValue) => {
+        if (newValue !== oldValue) {
+          currentPage.value = 1
+        }
+      }
+    )
+
+    // 页码改变,通知search,然后search会发送新的请求
+    let uploadCurrentPage = inject("uploadCurrentPage")
+    watch(currentPage, (newValue) => {
+      uploadCurrentPage(newValue)
+    })
 
     // 点击歌曲后,根据歌曲id去请求完整信息(因为搜索结果返回的歌曲信息不全,没有图片地址,而playPage中需要显示图片)
     const store = useStore()
     async function clickSong(song) {
       const result = await reqSongDetail(song.id)
-      let img = result.songs[0].al.picUrl
-      song.img = img
+      let imgUrl = result.songs[0].al.picUrl
+      song.img = imgUrl
 
       store.dispatch("music/startSong", song)
     }
 
-    return { songs, totalPage, clickSong, parseTime, pagination }
+    return { songs, totalPage, clickSong, parseTime }
   },
   components: { Pagination },
 }
