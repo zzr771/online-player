@@ -9,25 +9,25 @@
       :navigation="true"
       :loop="true"
       :pagination="{ clickable: true }"
+      :autoplay="{ delay: 4000, disableOnInteraction: false }"
+      :lazy="{ loadPrevNext: true }"
     >
-      <!-- :autoplay="{ delay: 4000, disableOnInteraction: false }" 
-       -->
       <swiper-slide v-for="(banner, index) in banners" :key="index" @click="clickSlide(index)">
-        <img :src="genImgURL(banner.imageUrl, 1000, 400)" alt="" />
+        <img :data-src="genImgURL(banner.imageUrl, 1000, 400)" class="swiper-lazy" />
       </swiper-slide>
     </swiper>
   </div>
 </template>
 
 <script>
-import SwiperCore, { Navigation, Pagination, Autoplay } from "swiper"
+import SwiperCore, { Navigation, Pagination, Autoplay, Lazy } from "swiper"
 import { Swiper, SwiperSlide } from "swiper/vue/swiper-vue"
 import "swiper/swiper-bundle.css"
 import { reactive, nextTick } from "vue"
 import { reqBanners } from "@/api/discovery"
 import { genImgURL } from "@/utils/common"
 
-SwiperCore.use([Navigation, Pagination, Autoplay])
+SwiperCore.use([Navigation, Pagination, Autoplay, Lazy])
 export default {
   setup() {
     // swiper7似乎已经不支持将配置存放在变量并使用 <swiper :options="swiperOptions"> 方法引用
@@ -49,10 +49,12 @@ export default {
     // })
     //#endregion
 
-    let banners = reactive({})
+    let banners = reactive([])
     ;(async function getBanner() {
       let result = await reqBanners()
-      banners = Object.assign(banners, result.banners)
+      if (result.code === 200) {
+        banners = Object.assign(banners, result.banners)
+      }
       // 等待轮播图生成后执行初始化
       nextTick(() => {
         _initSwiper()
@@ -174,6 +176,7 @@ export default {
       text-align: center;
       font-size: 18px;
       background: #fff;
+      overflow: hidden;
 
       /* Center slide text vertically */
       display: -webkit-box;
@@ -201,6 +204,7 @@ export default {
             加最大宽度是为了让轮播图出现时的动作不至于太夸张
           */
         max-width: 500px;
+        max-height: 200px;
       }
     }
     .swiper-slide-next {
