@@ -32,7 +32,7 @@
 import VideoPlayer from "@/components/VideoPlayer"
 import Comments from "@/components/Comments"
 import MVCardMini from "@/components/MVCardMini"
-import { reactive, ref, watch, onBeforeUnmount } from "vue"
+import { reactive, ref, watch, provide, onBeforeUnmount } from "vue"
 import { useStore } from "vuex"
 import { reqMvDetail, reqMvUrl, reqSimiMvs } from "@/api/mv"
 import { reqArtist } from "@/api/music"
@@ -49,8 +49,14 @@ export default {
     let simiMvs = reactive({})
     let artist = reactive({})
 
+    // 是否正在搜索, 如果是, 暂停播放
+    let isSearching = ref(false)
+    provide("isSearching", isSearching)
+
     // 请求页面中所需的所有数据
     async function getData() {
+      isSearching.value = true
+
       const [{ data: _mvDetail }, { data: _mvUrl }, { mvs: _simiMvs }] = await Promise.all([
         reqMvDetail(props.MVID),
         reqMvUrl(props.MVID),
@@ -62,6 +68,8 @@ export default {
       mvUrl.value = _mvUrl.url
       simiMvs = Object.assign(simiMvs, _simiMvs)
       artist = Object.assign(artist, _artist.artist)
+
+      isSearching.value = false
     }
     getData()
 
