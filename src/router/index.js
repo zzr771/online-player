@@ -53,6 +53,18 @@ const routes = [
     },
   },
   {
+    name: "playlistDetail",
+    path: "/playlistDetail",
+    component: () => import("@/pages/PlaylistDetail/PlaylistDetail"),
+    props($route) {
+      return { id: $route.query.id }
+    },
+    meta: {
+      showSideMenu: true,
+      autoTop: true,
+    },
+  },
+  {
     name: "search",
     path: "/search",
     props($route) {
@@ -66,9 +78,6 @@ const routes = [
       {
         path: "songs",
         name: "search-songs",
-        props($route) {
-          return { keyword: $route.query.keyword }
-        },
         component: () => import("@/pages/Search/routes/Songs"),
         meta: {
           keepAlive: true,
@@ -77,9 +86,6 @@ const routes = [
       {
         path: "lists",
         name: "search-lists",
-        props($route) {
-          return { keyword: $route.query.keyword }
-        },
         component: () => import("@/pages/Search/routes/Lists"),
         meta: {
           keepAlive: true,
@@ -88,9 +94,6 @@ const routes = [
       {
         path: "mvs",
         name: "search-mvs",
-        props($route) {
-          return { keyword: $route.query.keyword }
-        },
         component: () => import("@/pages/Search/routes/MVs"),
         meta: {
           keepAlive: true,
