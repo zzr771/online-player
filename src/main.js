@@ -4,6 +4,8 @@ import App from "./App.vue"
 import router from "@/router/index"
 // Vuex
 import store from "@/store/index"
+// 懒加载
+import lazyPlugin from "vue3-lazy"
 
 import "@/style/reset.less"
 import "@/style/common.less"
@@ -13,4 +15,7 @@ import "@/utils/rem"
 const app = createApp(App)
 app.use(router)
 app.use(store)
+app.use(lazyPlugin, {
+  loading: require("/static/imgs/lazy-loading.png"), // 加载时默认图片
+})
 app.mount("#app")
