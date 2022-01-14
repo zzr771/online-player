@@ -9,8 +9,8 @@
       :navigation="true"
       :loop="true"
       :pagination="{ clickable: true }"
-      :autoplay="{ delay: 4000, disableOnInteraction: false }"
       :lazy="{ loadPrevNext: true }"
+      :autoplay="{ delay: 4000, disableOnInteraction: false }"
     >
       <swiper-slide v-for="(banner, index) in banners" :key="index" @click="clickSlide(index)">
         <img :data-src="genImgURL(banner.imageUrl, 1000, 400)" class="swiper-lazy" />
@@ -55,10 +55,8 @@ export default {
       if (result.code === 200) {
         banners = Object.assign(banners, result.banners)
       }
-      // 等待轮播图生成后执行初始化
-      nextTick(() => {
-        _initSwiper()
-      })
+
+      nextTick(_initSwiper)
     })()
 
     function _initSwiper() {
