@@ -13,7 +13,7 @@
 import TabsRound from "@/components/TabsRound"
 import MVCard from "@/components/MVCard"
 import Pagination from "@/components/Pagination"
-import { ref, reactive, provide, computed, watch } from "vue"
+import { ref, reactive, provide, watch } from "vue"
 import { reqAllMvs } from "@/api/mv"
 
 // 一页中展示多少mv
@@ -22,6 +22,8 @@ export default {
   setup() {
     let mvs = reactive([])
     let currentPage = ref(1)
+    provide("currentPage", currentPage)
+
     let pageNum = ref(0)
     // 记录所有被选中的tab
     let onTabs = {}
@@ -44,11 +46,6 @@ export default {
       getAllMvs(onTabs)
     })
 
-    // 页码
-    function updateCurrentPage(page) {
-      currentPage.value = page
-    }
-    provide("updateCurrentPage", updateCurrentPage)
     let newMvs = ref(null)
     watch(currentPage, () => {
       newMvs.value.scrollIntoView({ behavior: "smooth" })
