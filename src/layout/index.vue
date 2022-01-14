@@ -13,10 +13,10 @@
             </keep-alive>
             <component :is="Component" v-if="!$route.meta.keepAlive" />
           </router-view>
+          <transition name="fade">
+            <Loading></Loading>
+          </transition>
         </div>
-        <transition name="fade">
-          <Loading></Loading>
-        </transition>
       </div>
     </div>
     <ErrMsg></ErrMsg>
