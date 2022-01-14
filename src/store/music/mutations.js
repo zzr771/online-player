@@ -1,5 +1,5 @@
 export default {
-  // 重置currentSong
+  // 重置currentSong, 即播放歌曲
   setCurrentSong(state, { song }) {
     // 去除前一首歌的isPlaying状态(如果有前一首歌的话)
     if (state.currentSong.id) {
@@ -7,6 +7,11 @@ export default {
     }
     state.currentSong = song
     song.isPlaying = true
+
+    // 向历史记录列表中添加歌曲
+    if (!state.historyPlayList.includes(song)) {
+      state.historyPlayList.push(song)
+    }
   },
 
   // 播放/暂停
@@ -61,6 +66,10 @@ export default {
     }
     state.currentSong = list[0]
     state.currentSong.isPlaying = true
+    // 向历史记录列表中添加歌曲
+    if (!state.historyPlayList.includes(state.currentSong)) {
+      state.historyPlayList.push(state.currentSong)
+    }
   },
 
   // 清空播放列表  (也清除currentSong)
@@ -70,13 +79,6 @@ export default {
     state.currentSong.isPlaying = false
     state.currentSong = {}
     state.currentTime = 0
-  },
-
-  // 向历史记录列表中添加歌曲
-  addSongToHistoryPlayList(state, { song }) {
-    if (!state.historyPlayList.includes(song)) {
-      state.historyPlayList.push(song)
-    }
   },
 
   // 清空历史记录

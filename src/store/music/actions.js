@@ -4,7 +4,5 @@ export default {
     content.commit("setCurrentSong", { song })
     // 加入播放列表
     content.commit("addSongToPlayList", { song })
-    // 更新历史记录
-    content.commit("addSongToHistoryPlayList", { song })
   },
 }
