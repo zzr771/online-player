@@ -3,7 +3,7 @@
   <div class="recommended-list">
     <TitleH2 title="推荐歌单"></TitleH2>
     <div class="lists-wrapper">
-      <ListCard v-for="(item, index) in 10" :key="index"></ListCard>
+      <ListCard v-for="(playlist, index) in playlists" :key="index" :playlist="playlist"></ListCard>
     </div>
   </div>
 </template>
@@ -11,7 +11,22 @@
 <script>
 import ListCard from "@/components/ListCard"
 import TitleH2 from "@/components/TitleH2"
+import { reqPerPlaylists } from "@/api/discovery"
+import { reactive } from "vue"
+
+const LIMIT = 10
 export default {
+  setup() {
+    let playlists = reactive([])
+    ;(async function getPerPlaylists() {
+      let result = await reqPerPlaylists({ limit: LIMIT })
+      if (result.code === 200) {
+        playlists.length = 0
+        playlists = Object.assign(playlists, result.result)
+      }
+    })()
+    return { playlists }
+  },
   components: { ListCard, TitleH2 },
 }
 </script>
