@@ -6,7 +6,7 @@
 <script>
 import Player from "xgplayer"
 import { toRem } from "@/utils/rem"
-import { ref, onMounted, watch } from "vue"
+import { ref, onMounted, watch, inject } from "vue"
 import { useStore } from "vuex"
 export default {
   props: {
@@ -61,6 +61,14 @@ export default {
         }
       }
     )
+
+    // 监视isSearching,如果值为true,暂停播放
+    let isSearching = inject("isSearching")
+    watch(isSearching, (newValue) => {
+      if (newValue) {
+        myPlayer.pause()
+      }
+    })
 
     return { videoPlayer }
   },
