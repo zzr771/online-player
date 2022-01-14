@@ -137,7 +137,6 @@ export default {
       })
       simiSongs.length = 0
       simiSongs = Object.assign(simiSongs, _simiSongs)
-      // console.log(_simiSongs)
     }
 
     // 点击歌名后面的MV图标后的处理
