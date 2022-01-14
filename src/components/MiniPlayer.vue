@@ -26,7 +26,6 @@
     <div v-else></div>
     <!-- 右 -->
     <div class="options">
-      <div class="icon-wrapper"><i class="iconfont icon-fenxiang"></i></div>
       <div class="icon-wrapper play-mode">
         <i class="iconfont icon-mayi-shunxubofang" ref="playModeBtn" @click="clickPlayModeBtn"></i>
         <div class="mini-player-bubble play-mode-bubble" ref="playModeBubble">{{ playModeText }}</div>
