@@ -1,6 +1,6 @@
 export default function LyricPaser(lrc) {
   // 如果有译文歌词, 说明原文是外文. 译文歌词也需要解析
-  if (lrc.tlyric.lyric.length) {
+  if (lrc.tlyric) {
     const foreignLrcArr = parseLyric(lrc.lrc.lyric)
     const chineseLrcArr = parseLyric(lrc.tlyric.lyric)
     // 把译文歌词添加进foreignLrcArr中
@@ -47,7 +47,8 @@ function parseLyric(lrc) {
     */
     const [, hour, min, sec, msec] = timeParts
     // 时间转化为秒
-    const totelTime = Number(hour ? hour * 3600 : 0) + Number(min * 60) + Number(sec) + Number(msec / 1000)
+    const totelTime =
+      Number(hour ? hour * 3600 : 0) + Number(min ? min * 60 : 0) + Number(sec) + Number(msec / 1000)
 
     lyricObjs.push({ time: totelTime, contents: [content] })
   })
