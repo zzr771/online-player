@@ -51,8 +51,9 @@ export default {
   .img-part {
     position: relative;
     img {
-      width: 216px;
-      height: 115px;
+      vertical-align: top;
+      width: 100%;
+      max-height: 112.3px;
       border-radius: 5px;
     }
     .play-count {
