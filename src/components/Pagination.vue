@@ -58,11 +58,17 @@ export default {
           也没有左右的省略号
   */
   setup(props) {
-    // 当前页的页码
-    let currentPage = ref(1)
-    let variedPageNums = reactive([2, 3, 4, 5, 6])
+    // 当前页的页码,本组件核心变量,为了实现父子组件双向通信,该变量必须由父组件provide
+    let currentPage = inject("currentPage")
+
+    watch(currentPage, (newValue, oldValue) => {
+      if (newValue !== oldValue) {
+        computePageNums()
+      }
+    })
 
     // 根据总页码数决定中间几个页码是活动页码还是固定页码
+    let variedPageNums = reactive([2, 3, 4, 5, 6])
     function initVariedPageNums() {
       // 如果页码总数小于8,那中间的就不是活动页码,需要处理.否则不需要处理
       if (props.totalPageNum < 8) {
@@ -81,9 +87,16 @@ export default {
         variedPageNums = Object.assign(variedPageNums, [2, 3, 4, 5, 6])
       }
     }
-    initVariedPageNums()
 
-    watch(() => props.totalPageNum, initVariedPageNums)
+    watch(
+      () => props.totalPageNum,
+      (newValue) => {
+        if (newValue) {
+          initVariedPageNums()
+        }
+      },
+      { immediate: true }
+    )
 
     //计算活动页码
     function computePageNums() {
@@ -114,7 +127,6 @@ export default {
         return
       }
       currentPage.value = num
-      computePageNums()
     }
     // 点击左右省略号后, 当前页码+5或-5
     function clickEllip(dir) {
@@ -123,7 +135,6 @@ export default {
       } else if (dir === "right") {
         currentPage.value += 5
       }
-      computePageNums()
     }
     // 点击左右箭头,就将当前页码重置为首页或尾页
     function clickBtn(dir) {
@@ -132,12 +143,11 @@ export default {
       } else if (dir === "right") {
         currentPage.value = props.totalPageNum
       }
-      computePageNums()
     }
 
+    // 左右两个省略号, 在hover状态下变换成图标
     let leftEllip = ref(null)
     let rightEllip = ref(null)
-    // 左右两个省略号, 在hover状态下变换成图标
     onMounted(() => {
       if (leftEllip.value && rightEllip.value) {
         handleEllips(leftEllip.value, "icon-zuozuo-")
@@ -155,18 +165,6 @@ export default {
       }
     }
 
-    // 该组件必须从父组件中接受一个函数 页码变化时,调用该函数,更新父组件中的页码数据
-    const updateCurrentPage = inject("updateCurrentPage")
-    watch(currentPage, (newValue) => {
-      updateCurrentPage(newValue)
-    })
-
-    // 页码重置  该回调供父组件调用
-    function reset() {
-      currentPage.value = 1
-      console.log("reset")
-    }
-
     return {
       variedPageNums,
       currentPage,
@@ -175,7 +173,6 @@ export default {
       clickBtn,
       leftEllip,
       rightEllip,
-      reset,
     }
   },
 }
