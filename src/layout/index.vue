@@ -14,18 +14,26 @@
             <component :is="Component" v-if="!$route.meta.keepAlive" />
           </router-view>
         </div>
+        <transition name="fade">
+          <Loading></Loading>
+        </transition>
       </div>
     </div>
+    <ErrMsg></ErrMsg>
   </div>
 </template>
 
 <script>
 import Header from "./Header"
 import SideMenu from "./SideMenu"
+import ErrMsg from "@/components/ErrMsg"
+import Loading from "@/components/Loading"
 export default {
   components: {
     Header,
     SideMenu,
+    ErrMsg,
+    Loading,
   },
 }
 </script>
@@ -39,6 +47,7 @@ export default {
     .content {
       position: relative;
       flex: 1;
+      overflow-x: hidden;
       overflow-y: auto;
       min-width: @layout-content-min-width;
       margin-bottom: @mini-player-height;
