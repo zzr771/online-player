@@ -11,13 +11,13 @@
 <script>
 import TitleH2 from "@/components/TitleH2"
 import MVCard from "@/components/MVCard"
-import { reqNewMVs } from "@/api/discovery"
+import { reqPerMVs } from "@/api/discovery"
 import { reactive } from "vue"
 export default {
   setup() {
     let newMVs = reactive({})
     ;(async function () {
-      let response = await reqNewMVs()
+      let response = await reqPerMVs()
       newMVs = Object.assign(newMVs, response.result)
     })()
 
