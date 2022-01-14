@@ -1,32 +1,6 @@
 <template>
   <div class="side-menu" v-show="$route.meta.showSideMenu">
-    <div class="user" @click="showLoginWindow = !showLoginWindow">
-      <div class="user-icon">
-        <i class="iconfont icon-yonghu"></i>
-        <p>未登录</p>
-      </div>
-      <transition name="fadeMove">
-        <div class="login-window-wrapper" v-show="showLoginWindow">
-          <div class="login-window" @click.stop="">
-            <div class="login-title">
-              <p>登录</p>
-              <i class="iconfont icon-guanbi" @click="showLoginWindow = false"></i>
-            </div>
-            <input type="text" placeholder="请输入您的网易云UID" class="login-input" />
-            <div class="login-body">
-              <p>
-                1. 请点击
-                <a href="http://music.163.com">http://music.163.com</a> 打开网易云音乐
-              </p>
-              <p>2. 点击页面右上角的“登录”</p>
-              <p>3. 点击您的头像，进入我的主页</p>
-              <p>4. 复制浏览器地址栏 /user/home?id= 后面的数字（网易云 UID）</p>
-            </div>
-            <div class="login-btn">登录</div>
-          </div>
-        </div>
-      </transition>
-    </div>
+    <User></User>
     <div class="menu-list">
       <ul class="menu-options">
         <li>
@@ -54,19 +28,17 @@
           </router-link>
         </li>
       </ul>
-      <div class="user-lists-wrapper">
-        <p class="title">创建的歌单</p>
+      <div class="user-lists-wrapper" v-if="userPlaylists.length">
+        <p class="title">我的歌单</p>
         <ul class="user-lists">
-          <li>
-            <a href="#">
+          <li
+            v-for="(userPlaylist, index) in userPlaylists"
+            :key="index"
+            @click="$router.push({ path: '/playlistDetail', query: { id: userPlaylist.id } })"
+          >
+            <a href="javascript:;">
               <i class="iconfont icon-gedan"></i>
-              <span>我喜欢的音乐</span>
-            </a>
-          </li>
-          <li>
-            <a href="#">
-              <i class="iconfont icon-gedan"></i>
-              <span>新歌单</span>
+              <span>{{ userPlaylist.name }}</span>
             </a>
           </li>
         </ul>
@@ -76,12 +48,18 @@
 </template>
 
 <script>
-import { ref } from "vue"
+import { computed } from "vue"
+import { useStore } from "vuex"
+import User from "@/components/User"
 export default {
   setup() {
-    let showLoginWindow = ref(false)
-    return { showLoginWindow }
+    const store = useStore()
+
+    let userPlaylists = computed(() => store.state.user.userPlaylists)
+
+    return { userPlaylists }
   },
+  components: { User },
 }
 </script>
 
@@ -94,83 +72,6 @@ export default {
   color: var(--font-color);
   height: calc(100% - @mini-player-height);
   background-color: var(--menu-bgcolor);
-  .user {
-    padding: 20px 18px;
-    padding-bottom: 0;
-    margin-bottom: 12px;
-    .user-icon {
-      display: flex;
-      cursor: pointer;
-      i {
-        font-size: 21px;
-        margin-right: 10px;
-      }
-      p {
-        line-height: 22px;
-        font-size: 100%;
-      }
-    }
-    .login-window-wrapper {
-      position: fixed;
-      z-index: 900;
-      width: 100%;
-      height: 100%;
-      left: 0;
-      top: 0;
-      .login-window {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -70%);
-        width: 320px;
-        height: 325px;
-        padding: 20px;
-        box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
-        border-radius: 2px;
-        background-color: var(--modal-bg-color);
-        .login-title {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 40px;
-          i {
-            color: #999;
-            cursor: pointer;
-            &:hover {
-              color: @theme-color;
-            }
-          }
-        }
-        input {
-          border: none;
-          outline: none;
-          width: 100%;
-          height: 24px;
-          padding: 0 15px;
-          border-radius: 4px;
-          margin-bottom: 15px;
-          color: var(--header-input-color);
-          background-color: var(--input-bgcolor);
-        }
-        .login-body {
-          margin-bottom: 20px;
-          p {
-            line-height: 22px;
-          }
-        }
-        .login-btn {
-          width: 100%;
-          height: 30px;
-          line-height: $height;
-          text-align: center;
-          border-radius: 4px;
-          font-size: @font-size-medium-sm;
-          color: #fff;
-          background-color: @theme-color;
-          cursor: pointer;
-        }
-      }
-    }
-  }
   .menu-list {
     flex: 1;
     overflow: hidden;
@@ -210,14 +111,5 @@ export default {
       }
     }
   }
-}
-&.fadeMove-enter-active,
-&.fadeMove-leave-active {
-  transition: 0.25s;
-}
-&.fadeMove-enter-from,
-&.fadeMove-leave-to {
-  transform: translateY(-50px);
-  opacity: 0;
 }
 </style>
