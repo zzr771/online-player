@@ -2,10 +2,13 @@
 <template>
   <div class="mv-card" @click="routeGo">
     <div class="img-part">
-      <img :src="genImgURL(img, 500, 260)" alt="" />
+      <img v-lazy="genImgURL(img, 500, 260)" alt="" :key="img" />
       <div class="play-count">
         <i class="iconfont icon-bofang"></i>
         {{ simplifyPlayCount(mv.playCount) }}
+      </div>
+      <div class="duration" v-if="mv.duration">
+        {{ parseTime(mv.duration / 1000) }}
       </div>
       <PlayIcon :size="45"></PlayIcon>
     </div>
@@ -17,7 +20,7 @@
 <script>
 import PlayIcon from "@/components/PlayIcon"
 import { useRouter } from "vue-router"
-import { genImgURL, simplifyPlayCount } from "@/utils/common"
+import { genImgURL, simplifyPlayCount, parseTime } from "@/utils/common"
 import { computed } from "vue"
 export default {
   props: { mv: Object },
@@ -32,7 +35,7 @@ export default {
       router.push({ path: `/mv/${props.mv.id}` })
     }
 
-    return { img, routeGo, genImgURL, simplifyPlayCount }
+    return { img, routeGo, genImgURL, simplifyPlayCount, parseTime }
   },
   components: { PlayIcon },
 }
@@ -54,12 +57,19 @@ export default {
     .play-count {
       position: absolute;
       top: 3px;
-      right: 3px;
-      font-size: 12px;
+      right: 5px;
+      font-size: @font-size-sm;
       color: #fff;
       i {
         font-size: 100%;
       }
+    }
+    .duration {
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+      font-size: @font-size-sm;
+      color: #fff;
     }
   }
   .name,
