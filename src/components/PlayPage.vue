@@ -103,14 +103,16 @@ export default {
     let simiSongs = reactive([])
     // 获取歌曲相关数据
     async function getSongData(id) {
+      // 先清除上一首歌的歌词
+      parsedLyric.length = 0
+
       let [_lrc, _relevantPlayLists, _simiSongs] = await Promise.all([
         reqLyric(id),
         reqRelevantPlayLists(id),
         reqSimiSongs(id),
       ])
+
       //-----------------------歌词
-      // 先清除上一首歌的歌词
-      parsedLyric.length = 0
       //如果歌词存在
       if (_lrc) {
         // 把LyricPaser解析后的数组赋值给parsedLyric,这里用Object.assign. 能够在不改变parsedLyric的响应式和内存指针的前提下把一个对象的所有属性赋值给它
