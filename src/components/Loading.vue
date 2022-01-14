@@ -50,6 +50,7 @@ export default {
 @diameter: 50px;
 .loading-wrapper {
   position: absolute;
+  z-index: 1000;
   left: 0;
   right: 0;
   bottom: 0;
