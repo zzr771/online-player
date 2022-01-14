@@ -16,6 +16,6 @@ const app = createApp(App)
 app.use(router)
 app.use(store)
 app.use(lazyPlugin, {
-  loading: require("/static/imgs/lazy-loading.png"), // 加载时默认图片
+  loading: require("@/assets/images/lazy-loading.png"), // 加载时默认图片
 })
 app.mount("#app")
