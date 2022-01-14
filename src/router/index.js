@@ -151,8 +151,13 @@ router.afterEach((to, from) => {
   }
 })
 
-//离开keepAlive路由之前,保存页面滚动位置
 router.beforeEach((to, from, next) => {
+  // 检查是否有全局loading. 如果有, 就不允许切换路由, 等到该异步请求结束后才能允许
+  if (store.state.global.showLoading === 1) {
+    return
+  }
+
+  // 离开keepAlive路由之前,保存页面滚动位置
   // 页面第一次加载,是通过重定向打开的/discovery, from.name为空
   if (!from.meta.keepAlive || !from.name) {
     next()
