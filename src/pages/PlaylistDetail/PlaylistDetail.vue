@@ -105,7 +105,9 @@ export default {
 
     // 播放全部歌曲
     provide("playAll", () => {
-      store.commit("music/addListToPlayList", { list: playlist.songs })
+      if (playlist.songs.length) {
+        store.commit("music/addListToPlayList", { list: playlist.songs })
+      }
     })
 
     //--------------------------------歌单内搜索功能---------------------
