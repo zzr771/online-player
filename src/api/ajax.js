@@ -2,8 +2,8 @@ import axios from "axios"
 
 import store from "@/store/index"
 
-// 添加一个请求url的统一开头, 供代理服务器识别
-const BASE_URL = "/netease-api"
+const BASE_URL = "https://netease-cloud-music-api-ten-gamma.vercel.app"
+// const BASE_URL = "/netease-api"
 
 /* 参数url必须以斜线开头如: /song
 
