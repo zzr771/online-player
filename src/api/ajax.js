@@ -2,7 +2,9 @@ import axios from "axios"
 
 import store from "@/store/index"
 
+// 生产环境使用
 const BASE_URL = "https://netease-cloud-music-api-ten-gamma.vercel.app"
+// 开发模式, 结合代理服务器使用
 // const BASE_URL = "/netease-api"
 
 /* 参数url必须以斜线开头如: /song
