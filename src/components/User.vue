@@ -199,6 +199,7 @@ export default {
     async function getUserPlaylists() {
       let result = await reqUserPlaylists(user.value.userId)
       if (result.code === 200) {
+        // 去除歌单第一个, 因为访问它需要
         store.commit("user/saveUserPlaylists", { playlists: result.playlist })
       }
     }

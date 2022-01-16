@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from "vue-router/dist/vue-router.esm-bundler"
+import { createRouter, createWebHashHistory } from "vue-router/dist/vue-router.esm-bundler"
 import store from "@/store/index"
 
 const routes = [
@@ -112,7 +112,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory("/online-player/"),
+  history: createWebHashHistory("/online-player/"),
   routes,
 })
 export default router
